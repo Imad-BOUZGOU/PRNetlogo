@@ -1,75 +1,108 @@
 breed[macrophages macrophage]
 breed[cytokines cytokine]
+breed[chemokines chemokine]
 breed[RANKLs RANKL]
 breed[MMPs MMP]
 breed[ostéoclastes ostéoclaste]
 breed[chondrocytes chondrocyte]
+breed[fibroblasts fibroblast]
 
-ostéoclastes-own[cpt]
-
-to create-univers
+to setup
   ca
   set-default-shape macrophages "circle"
-  set-default-shape cytokines "orbit 3"
+  set-default-shape cytokines "cytokine"
+  set-default-shape chemokines "ballpin"
   set-default-shape RANKLs "dot"
   set-default-shape MMPs "dot"
   set-default-shape ostéoclastes "monster"
   set-default-shape chondrocytes "square"
-  ;create-macrophages 1
-  ;create-cytokines 1
-  ;create-RANKLs 1
-  ;create-MMPs 1
-  ;create-ostéoclastes 1
-  ;create-chondrocytes 1
-
+  set-default-shape fibroblasts "square"
   ;; OS
-  ask patches with [(pxcor <= 0) and (pycor > 0)] [set pcolor white]
+  ask patches with [(pxcor < 0) and (pycor > 5)][set pcolor white]
   ;; Cartilage
-  ask patches with [(pxcor < 0) and (pycor <= 0)][set pcolor cyan]
+  ask patches with [(pxcor < 0) and (pycor > 1) and (pycor < 6)][set pcolor white]
   ;; Membrane Synovial
-  ask patches with [(pxcor > 0) and (pycor > 0)][set pcolor yellow] ;; yellow + 1 apres inflammation red + 1
+  ask patches with [(pxcor > 14)][set pcolor yellow] ;; yellow + 1 apres inflammation red + 1
   ;; Liquide Synovial
-  ask patches with [(pxcor > 0) and (pycor < 0)][set pcolor yellow + 3]
+  ask patches with [pcolor = black][set pcolor 48]
 
-  ask n-of 10 patches with [pcolor = white][
-    sprout-ostéoclastes 1 [
-      set color black
-      SET SIZE 3
-    ]
-  ]
-end
-
-to create-cartilage-gardians
-  ask n-of 5 patches with [pcolor = cyan] [
+  ask n-of nb-macrophage patches with [pcolor = 48] [
     sprout-macrophages 1 [
-      hatch-cytokines 20[
+      set color red
+      hatch-cytokines 5[
         set color grey
       ]
     ]
   ]
-  ;ask n-of 20 patches with [pcolor = black] [sprout 1[set heading 0
-  ;  set color green set shape "circle" set size 1]]
-  ;ask-concurrent turtles with [color = green] [hatch 1 [
-  ;  set color red set shape "arrow" set size 1 fd 2]]
+  ask n-of nb-ostéoclaste patches with [(pxcor < 0) and (pycor > 5)] [
+    sprout-ostéoclastes 1 [
+      set color black
+    ]
+  ]
+  ask patches with [(pxcor < 0) and (pycor > 1) and (pycor < 6)] [
+    sprout-chondrocytes 1[
+      set heading 180
+      set color cyan
+    ]
+  ]
+  ask n-of nb-fibroblast patches with [pcolor = yellow] [
+    sprout-fibroblasts 1[
+      set heading 180
+      set color white
+    ]
+  ]
+  ask turtles [set size 1.2]
 end
 
 to mcr_fwd
+  ask macrophages[
+    if (pcolor = 48) [
+      lt random 90 rt random 90
+      ifelse ([pcolor] of patch-ahead 1 = 48)[
+        fd 1
+      ]
+      [
+        lt 180
+      ]
+    ]
+  ]
   ask cytokines[
-      lt random 90
-      rt random 90
-      fd 1
-    if (pcolor = yellow)[set pcolor red ask patches with [pcolor = red] [sprout-MMPs 1[set color green]] die]
+    lt random 90
+    rt random 90
+    fd 1
+    if (any? fibroblasts-here)[
+      ask fibroblasts-here [
+        set pcolor red
+        hatch-MMPs 1[
+          set color green
+          lt random 90 rt random 90
+          jump 5
+        ]
+        hatch-RANKLs 1[
+          set color 126
+          lt random 90 rt random 90
+          jump 5
+        ]
+        hatch-chemokines 1[
+          set color 35
+          lt random 90 rt random 90
+          jump 5
+        ]
+        die
+      ]
+    die
+    ]
   ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-705
-506
+198
+11
+703
+517
 -1
 -1
-7.984
+15.061
 1
 10
 1
@@ -79,10 +112,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--30
-30
--30
-30
+-16
+16
+-16
+16
 0
 0
 1
@@ -90,12 +123,12 @@ ticks
 30.0
 
 BUTTON
-50
-59
-127
-92
-creation
-create-univers
+42
+136
+156
+169
+Create Univers
+setup
 NIL
 1
 T
@@ -106,39 +139,67 @@ NIL
 NIL
 1
 
-BUTTON
-40
-100
-141
-133
-chondrocyte
-create-cartilage-gardians
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-93
+SLIDER
+17
+10
 189
-172
-222
+43
+nb-fibroblast
+nb-fibroblast
+0
+50
+14.0
+1
+1
+NIL
+HORIZONTAL
+
+BUTTON
+20
+245
+99
+278
 NIL
 mcr_fwd
 T
 1
 T
-TURTLE
+OBSERVER
 NIL
 NIL
 NIL
 NIL
 1
+
+SLIDER
+17
+52
+189
+85
+nb-macrophage
+nb-macrophage
+0
+15
+7.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+17
+91
+189
+124
+nb-ostéoclaste
+nb-ostéoclaste
+0
+50
+25.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -187,237 +248,18 @@ true
 0
 Polygon -7500403 true true 150 0 135 15 120 60 120 105 15 165 15 195 120 180 135 240 105 270 120 285 150 270 180 285 210 270 165 240 180 180 285 195 285 165 180 105 180 60 165 15
 
-airplane 2
-true
-0
-Polygon -7500403 true true 150 26 135 30 120 60 120 90 18 105 15 135 120 150 120 165 135 210 135 225 150 285 165 225 165 210 180 165 180 150 285 135 282 105 180 90 180 60 165 30
-Line -7500403 false 120 30 180 30
-Polygon -7500403 true true 105 255 120 240 180 240 195 255 180 270 120 270
-
-ambulance
-false
-0
-Rectangle -7500403 true true 30 90 210 195
-Polygon -7500403 true true 296 190 296 150 259 134 244 104 210 105 210 190
-Rectangle -1 true false 195 60 195 105
-Polygon -16777216 true false 238 112 252 141 219 141 218 112
-Circle -16777216 true false 234 174 42
-Circle -16777216 true false 69 174 42
-Rectangle -1 true false 288 158 297 173
-Rectangle -1184463 true false 289 180 298 172
-Rectangle -2674135 true false 29 151 298 158
-Line -16777216 false 210 90 210 195
-Rectangle -16777216 true false 83 116 128 133
-Rectangle -16777216 true false 153 111 176 134
-Line -7500403 true 165 105 165 135
-Rectangle -7500403 true true 14 186 33 195
-Line -13345367 false 45 135 75 120
-Line -13345367 false 75 135 45 120
-Line -13345367 false 60 112 60 142
-
-ant
-true
-0
-Polygon -7500403 true true 136 61 129 46 144 30 119 45 124 60 114 82 97 37 132 10 93 36 111 84 127 105 172 105 189 84 208 35 171 11 202 35 204 37 186 82 177 60 180 44 159 32 170 44 165 60
-Polygon -7500403 true true 150 95 135 103 139 117 125 149 137 180 135 196 150 204 166 195 161 180 174 150 158 116 164 102
-Polygon -7500403 true true 149 186 128 197 114 232 134 270 149 282 166 270 185 232 171 195 149 186
-Polygon -7500403 true true 225 66 230 107 159 122 161 127 234 111 236 106
-Polygon -7500403 true true 78 58 99 116 139 123 137 128 95 119
-Polygon -7500403 true true 48 103 90 147 129 147 130 151 86 151
-Polygon -7500403 true true 65 224 92 171 134 160 135 164 95 175
-Polygon -7500403 true true 235 222 210 170 163 162 161 166 208 174
-Polygon -7500403 true true 249 107 211 147 168 147 168 150 213 150
-
-ant 2
-true
-0
-Polygon -7500403 true true 150 19 120 30 120 45 130 66 144 81 127 96 129 113 144 134 136 185 121 195 114 217 120 255 135 270 165 270 180 255 188 218 181 195 165 184 157 134 170 115 173 95 156 81 171 66 181 42 180 30
-Polygon -7500403 true true 150 167 159 185 190 182 225 212 255 257 240 212 200 170 154 172
-Polygon -7500403 true true 161 167 201 150 237 149 281 182 245 140 202 137 158 154
-Polygon -7500403 true true 155 135 185 120 230 105 275 75 233 115 201 124 155 150
-Line -7500403 true 120 36 75 45
-Line -7500403 true 75 45 90 15
-Line -7500403 true 180 35 225 45
-Line -7500403 true 225 45 210 15
-Polygon -7500403 true true 145 135 115 120 70 105 25 75 67 115 99 124 145 150
-Polygon -7500403 true true 139 167 99 150 63 149 19 182 55 140 98 137 142 154
-Polygon -7500403 true true 150 167 141 185 110 182 75 212 45 257 60 212 100 170 146 172
-
-apple
-false
-0
-Polygon -7500403 true true 33 58 0 150 30 240 105 285 135 285 150 270 165 285 195 285 255 255 300 150 268 62 226 43 194 36 148 32 105 35
-Line -16777216 false 106 55 151 62
-Line -16777216 false 157 62 209 57
-Polygon -6459832 true false 152 62 158 62 160 46 156 30 147 18 132 26 142 35 148 46
-Polygon -16777216 false false 132 25 144 38 147 48 151 62 158 63 159 47 155 30 147 18
-
 arrow
 true
 0
 Polygon -7500403 true true 150 0 0 150 105 150 105 293 195 293 195 150 300 150
 
-arrow 3
+ballpin
 true
 0
-Polygon -7500403 true true 135 255 105 300 105 225 135 195 135 75 105 90 150 0 195 90 165 75 165 195 195 225 195 300 165 255
-
-ball baseball
-false
-0
-Circle -7500403 true true 30 30 240
-Polygon -2674135 true false 247 79 243 86 237 106 232 138 232 167 235 199 239 215 244 225 236 234 229 221 224 196 220 163 221 138 227 102 234 83 240 71
-Polygon -2674135 true false 53 79 57 86 63 106 68 138 68 167 65 199 61 215 56 225 64 234 71 221 76 196 80 163 79 138 73 102 66 83 60 71
-Line -2674135 false 241 149 210 149
-Line -2674135 false 59 149 90 149
-Line -2674135 false 241 171 212 176
-Line -2674135 false 246 191 218 203
-Line -2674135 false 251 207 227 226
-Line -2674135 false 251 93 227 74
-Line -2674135 false 246 109 218 97
-Line -2674135 false 241 129 212 124
-Line -2674135 false 59 171 88 176
-Line -2674135 false 59 129 88 124
-Line -2674135 false 54 109 82 97
-Line -2674135 false 49 93 73 74
-Line -2674135 false 54 191 82 203
-Line -2674135 false 49 207 73 226
-
-ball basketball
-false
-0
-Circle -7500403 true true 26 26 247
-Polygon -16777216 false false 30 150 30 165 45 195 75 225 120 240 180 240 225 225 255 195 270 165 270 150 270 135 255 105 225 75 180 60 120 60 75 75 45 105 30 135
-Line -16777216 false 30 150 270 150
-Circle -16777216 false false 26 26 247
-
-ball tennis
-false
-0
-Circle -7500403 true true 30 30 240
-Circle -7500403 false true 30 30 240
-Polygon -16777216 true false 50 82 54 90 59 107 64 140 64 164 63 189 59 207 54 222 68 236 76 220 81 195 84 163 83 139 78 102 72 83 63 67
-Polygon -16777216 true false 250 82 246 90 241 107 236 140 236 164 237 189 241 207 246 222 232 236 224 220 219 195 216 163 217 139 222 102 228 83 237 67
-Polygon -1 true false 247 79 243 86 237 106 232 138 232 167 235 199 239 215 244 225 236 234 229 221 224 196 220 163 221 138 227 102 234 83 240 71
-Polygon -1 true false 53 79 57 86 63 106 68 138 68 167 65 199 61 215 56 225 64 234 71 221 76 196 80 163 79 138 73 102 66 83 60 71
-
-balloon
-false
-0
-Circle -7500403 true true 73 0 152
-Polygon -7500403 true true 219 104 205 133 185 165 174 190 165 210 165 225 150 225 147 119
-Polygon -7500403 true true 79 103 95 133 115 165 126 190 135 210 135 225 150 225 154 120
-Rectangle -6459832 true false 129 241 173 273
-Line -16777216 false 135 225 135 240
-Line -16777216 false 165 225 165 240
-Line -16777216 false 150 225 150 240
-
-bee
-true
-0
-Polygon -1184463 true false 152 149 77 163 67 195 67 211 74 234 85 252 100 264 116 276 134 286 151 300 167 285 182 278 206 260 220 242 226 218 226 195 222 166
-Polygon -16777216 true false 150 149 128 151 114 151 98 145 80 122 80 103 81 83 95 67 117 58 141 54 151 53 177 55 195 66 207 82 211 94 211 116 204 139 189 149 171 152
-Polygon -7500403 true true 151 54 119 59 96 60 81 50 78 39 87 25 103 18 115 23 121 13 150 1 180 14 189 23 197 17 210 19 222 30 222 44 212 57 192 58
-Polygon -16777216 true false 70 185 74 171 223 172 224 186
-Polygon -16777216 true false 67 211 71 226 224 226 225 211 67 211
-Polygon -16777216 true false 91 257 106 269 195 269 211 255
-Line -1 false 144 100 70 87
-Line -1 false 70 87 45 87
-Line -1 false 45 86 26 97
-Line -1 false 26 96 22 115
-Line -1 false 22 115 25 130
-Line -1 false 26 131 37 141
-Line -1 false 37 141 55 144
-Line -1 false 55 143 143 101
-Line -1 false 141 100 227 138
-Line -1 false 227 138 241 137
-Line -1 false 241 137 249 129
-Line -1 false 249 129 254 110
-Line -1 false 253 108 248 97
-Line -1 false 249 95 235 82
-Line -1 false 235 82 144 100
-
-bike
-false
-1
-Line -7500403 false 163 183 228 184
-Circle -7500403 false false 213 184 22
-Circle -7500403 false false 156 187 16
-Circle -16777216 false false 28 148 95
-Circle -16777216 false false 24 144 102
-Circle -16777216 false false 174 144 102
-Circle -16777216 false false 177 148 95
-Polygon -2674135 true true 75 195 90 90 98 92 97 107 192 122 207 83 215 85 202 123 211 133 225 195 165 195 164 188 214 188 202 133 94 116 82 195
-Polygon -2674135 true true 208 83 164 193 171 196 217 85
-Polygon -2674135 true true 165 188 91 120 90 131 164 196
-Line -7500403 false 159 173 170 219
-Line -7500403 false 155 172 166 172
-Line -7500403 false 166 219 177 219
-Polygon -16777216 true false 187 92 198 92 208 97 217 100 231 93 231 84 216 82 201 83 184 85
-Polygon -7500403 true true 71 86 98 93 101 85 74 81
-Rectangle -16777216 true false 75 75 75 90
-Polygon -16777216 true false 70 87 70 72 78 71 78 89
-Circle -7500403 false false 153 184 22
-Line -7500403 false 159 206 228 205
-
-bird
-false
-0
-Polygon -7500403 true true 135 165 90 270 120 300 180 300 210 270 165 165
-Rectangle -7500403 true true 120 105 180 237
-Polygon -7500403 true true 135 105 120 75 105 45 121 6 167 8 207 25 257 46 180 75 165 105
-Circle -16777216 true false 128 21 42
-Polygon -7500403 true true 163 116 194 92 212 86 230 86 250 90 265 98 279 111 290 126 296 143 298 158 298 166 296 183 286 204 272 219 259 227 235 240 241 223 250 207 251 192 245 180 232 168 216 162 200 162 186 166 175 173 171 180
-Polygon -7500403 true true 137 116 106 92 88 86 70 86 50 90 35 98 21 111 10 126 4 143 2 158 2 166 4 183 14 204 28 219 41 227 65 240 59 223 50 207 49 192 55 180 68 168 84 162 100 162 114 166 125 173 129 180
-
-boat
-false
-0
-Polygon -1 true false 63 162 90 207 223 207 290 162
-Rectangle -6459832 true false 150 32 157 162
-Polygon -13345367 true false 150 34 131 49 145 47 147 48 149 49
-Polygon -7500403 true true 158 33 230 157 182 150 169 151 157 156
-Polygon -7500403 true true 149 55 88 143 103 139 111 136 117 139 126 145 130 147 139 147 146 146 149 55
-
-boat 2
-false
-0
-Polygon -1 true false 63 162 90 207 223 207 290 162
-Rectangle -6459832 true false 150 32 157 162
-Polygon -13345367 true false 150 34 131 49 145 47 147 48 149 49
-Polygon -7500403 true true 157 54 175 79 174 96 185 102 178 112 194 124 196 131 190 139 192 146 211 151 216 154 157 154
-Polygon -7500403 true true 150 74 146 91 139 99 143 114 141 123 137 126 131 129 132 139 142 136 126 142 119 147 148 147
-
-boat top
-true
-0
-Polygon -7500403 true true 150 1 137 18 123 46 110 87 102 150 106 208 114 258 123 286 175 287 183 258 193 209 198 150 191 87 178 46 163 17
-Rectangle -16777216 false false 129 92 170 178
-Rectangle -16777216 false false 120 63 180 93
-Rectangle -7500403 true true 133 89 165 165
-Polygon -11221820 true false 150 60 105 105 150 90 195 105
-Polygon -16777216 false false 150 60 105 105 150 90 195 105
-Rectangle -16777216 false false 135 178 165 262
-Polygon -16777216 false false 134 262 144 286 158 286 166 262
-Line -16777216 false 129 149 171 149
-Line -16777216 false 166 262 188 252
-Line -16777216 false 134 262 112 252
-Line -16777216 false 150 2 149 62
-
-book
-false
-0
-Polygon -7500403 true true 30 195 150 255 270 135 150 75
-Polygon -7500403 true true 30 135 150 195 270 75 150 15
-Polygon -7500403 true true 30 135 30 195 90 150
-Polygon -1 true false 39 139 39 184 151 239 156 199
-Polygon -1 true false 151 239 254 135 254 90 151 197
-Line -7500403 true 150 196 150 247
-Line -7500403 true 43 159 138 207
-Line -7500403 true 43 174 138 222
-Line -7500403 true 153 206 248 113
-Line -7500403 true 153 221 248 128
-Polygon -1 true false 159 52 144 67 204 97 219 82
+Rectangle -7500403 true true 135 59 167 242
+Rectangle -7500403 true true 61 136 240 166
+Circle -7500403 true true 87 89 124
+Rectangle -7500403 true true 92 158 93 158
 
 box
 false
@@ -428,13 +270,6 @@ Polygon -7500403 true true 15 75 15 225 150 285 150 135
 Line -16777216 false 150 285 150 135
 Line -16777216 false 150 135 15 75
 Line -16777216 false 150 135 285 75
-
-box 2
-false
-0
-Polygon -7500403 true true 150 285 270 225 270 90 150 150
-Polygon -13791810 true false 150 150 30 90 150 30 270 90
-Polygon -13345367 true false 30 90 30 225 150 285 150 150
 
 bug
 true
@@ -457,29 +292,6 @@ Circle -16777216 true false 135 90 30
 Line -16777216 false 150 105 195 60
 Line -16777216 false 150 105 105 60
 
-cactus
-false
-0
-Polygon -7500403 true true 130 300 124 206 110 207 94 201 81 183 75 171 74 95 79 79 88 74 97 79 100 95 101 151 104 169 115 180 126 169 129 31 132 19 145 16 153 20 158 32 162 142 166 149 177 149 185 137 185 119 189 108 199 103 212 108 215 121 215 144 210 165 196 177 176 181 164 182 159 302
-Line -16777216 false 142 32 146 143
-Line -16777216 false 148 179 143 300
-Line -16777216 false 123 191 114 197
-Line -16777216 false 113 199 96 188
-Line -16777216 false 95 188 84 168
-Line -16777216 false 83 168 82 103
-Line -16777216 false 201 147 202 123
-Line -16777216 false 190 162 199 148
-Line -16777216 false 174 164 189 163
-
-cannon
-true
-0
-Polygon -7500403 true true 165 0 165 15 180 150 195 165 195 180 180 195 165 225 135 225 120 195 105 180 105 165 120 150 135 15 135 0
-Line -16777216 false 120 150 180 150
-Line -16777216 false 120 195 180 195
-Line -16777216 false 165 15 135 15
-Polygon -16777216 false false 165 0 135 0 135 15 120 150 105 165 105 180 120 195 135 225 165 225 180 195 195 180 195 165 180 150 165 15
-
 car
 false
 0
@@ -489,21 +301,6 @@ Circle -16777216 true false 30 180 90
 Polygon -16777216 true false 162 80 132 78 134 135 209 135 194 105 189 96 180 89
 Circle -7500403 true true 47 195 58
 Circle -7500403 true true 195 195 58
-
-car top
-true
-0
-Polygon -7500403 true true 151 8 119 10 98 25 86 48 82 225 90 270 105 289 150 294 195 291 210 270 219 225 214 47 201 24 181 11
-Polygon -16777216 true false 210 195 195 210 195 135 210 105
-Polygon -16777216 true false 105 255 120 270 180 270 195 255 195 225 105 225
-Polygon -16777216 true false 90 195 105 210 105 135 90 105
-Polygon -1 true false 205 29 180 30 181 11
-Line -7500403 false 210 165 195 165
-Line -7500403 false 90 165 105 165
-Polygon -16777216 true false 121 135 180 134 204 97 182 89 153 85 120 89 98 97
-Line -16777216 false 210 90 195 30
-Line -16777216 false 90 90 105 30
-Polygon -1 true false 95 29 120 30 119 11
 
 circle
 false
@@ -523,44 +320,25 @@ Polygon -7500403 true true 200 193 197 249 179 249 177 196 166 187 140 189 93 19
 Polygon -7500403 true true 73 210 86 251 62 249 48 208
 Polygon -7500403 true true 25 114 16 195 9 204 23 213 25 200 39 123
 
-crown
-false
-0
-Rectangle -7500403 true true 45 165 255 240
-Polygon -7500403 true true 45 165 30 60 90 165 90 60 132 166 150 60 169 166 210 60 210 165 270 60 255 165
-Circle -16777216 true false 222 192 22
-Circle -16777216 true false 56 192 22
-Circle -16777216 true false 99 192 22
-Circle -16777216 true false 180 192 22
-Circle -16777216 true false 139 192 22
-
 cylinder
 false
 0
 Circle -7500403 true true 0 0 300
 
-dart
+cytokine
 true
 0
-Polygon -7500403 true true 135 90 150 285 165 90
-Polygon -7500403 true true 135 285 105 255 105 240 120 210 135 180 150 165 165 180 180 210 195 240 195 255 165 285
-Rectangle -1184463 true false 135 45 165 90
-Line -16777216 false 150 285 150 180
-Polygon -16777216 true false 150 45 135 45 146 35 150 0 155 35 165 45
-Line -16777216 false 135 75 165 75
-Line -16777216 false 135 60 165 60
+Circle -1 true false 183 63 84
+Circle -16777216 false false 183 63 84
+Circle -7500403 true true 75 75 150
+Circle -16777216 false false 75 75 150
+Circle -1 true false 33 63 84
+Circle -16777216 false false 33 63 84
 
 dot
 false
 0
 Circle -7500403 true true 90 90 120
-
-eyeball
-false
-0
-Circle -1 true false 22 20 248
-Circle -7500403 true true 83 81 122
-Circle -16777216 true false 122 120 44
 
 face happy
 false
@@ -585,13 +363,6 @@ Circle -7500403 true true 8 8 285
 Circle -16777216 true false 60 75 60
 Circle -16777216 true false 180 75 60
 Polygon -16777216 true false 150 168 90 184 62 210 47 232 67 244 90 220 109 205 150 198 192 205 210 220 227 242 251 229 236 206 212 183
-
-fire
-false
-0
-Polygon -7500403 true true 151 286 134 282 103 282 59 248 40 210 32 157 37 108 68 146 71 109 83 72 111 27 127 55 148 11 167 41 180 112 195 57 217 91 226 126 227 203 256 156 256 201 238 263 213 278 183 281
-Polygon -955883 true false 126 284 91 251 85 212 91 168 103 132 118 153 125 181 135 141 151 96 185 161 195 203 193 253 164 286
-Polygon -2674135 true false 155 284 172 268 172 243 162 224 148 201 130 233 131 260 135 282
 
 fish
 false
@@ -627,19 +398,6 @@ Circle -16777216 true false 113 68 74
 Polygon -10899396 true false 189 233 219 188 249 173 279 188 234 218
 Polygon -10899396 true false 180 255 150 210 105 210 75 240 135 240
 
-footprint other
-true
-0
-Polygon -7500403 true true 75 195 90 240 135 270 165 270 195 255 225 195 225 180 195 165 177 154 167 139 150 135 132 138 124 151 105 165 76 172
-Polygon -7500403 true true 250 136 225 165 210 135 210 120 227 100 241 99
-Polygon -7500403 true true 75 135 90 135 105 120 105 75 90 75 60 105
-Polygon -7500403 true true 120 122 155 121 161 62 148 40 136 40 118 70
-Polygon -7500403 true true 176 126 200 121 206 89 198 61 186 57 166 106
-Polygon -7500403 true true 93 69 103 68 102 50
-Polygon -7500403 true true 146 34 136 33 137 15
-Polygon -7500403 true true 198 55 188 52 189 34
-Polygon -7500403 true true 238 92 228 94 229 76
-
 house
 false
 0
@@ -664,70 +422,23 @@ true
 0
 Line -7500403 true 150 0 150 150
 
-molecule water
-true
-0
-Circle -1 true false 183 63 84
-Circle -16777216 false false 183 63 84
-Circle -7500403 true true 75 75 150
-Circle -16777216 false false 75 75 150
-Circle -1 true false 33 63 84
-Circle -16777216 false false 33 63 84
-
 monster
-true
-1
-Polygon -7500403 true false 75 150 90 195 210 195 225 150 255 120 255 45 180 0 120 0 45 45 45 120
+false
+0
+Polygon -7500403 true true 75 150 90 195 210 195 225 150 255 120 255 45 180 0 120 0 45 45 45 120
 Circle -16777216 true false 165 60 60
 Circle -16777216 true false 75 60 60
-Polygon -7500403 true false 225 150 285 195 285 285 255 300 255 210 180 165
-Polygon -7500403 true false 75 150 15 195 15 285 45 300 45 210 120 165
-Polygon -7500403 true false 210 210 225 285 195 285 165 165
-Polygon -7500403 true false 90 210 75 285 105 285 135 165
-Rectangle -7500403 true false 135 165 165 270
-
-moon
-false
-0
-Polygon -7500403 true true 175 7 83 36 25 108 27 186 79 250 134 271 205 274 281 239 207 233 152 216 113 185 104 132 110 77 132 51
-
-moose
-false
-0
-Polygon -7500403 true true 196 228 198 297 180 297 178 244 166 213 136 213 106 213 79 227 73 259 50 257 49 229 38 197 26 168 26 137 46 120 101 122 147 102 181 111 217 121 256 136 294 151 286 169 256 169 241 198 211 188
-Polygon -7500403 true true 74 258 87 299 63 297 49 256
-Polygon -7500403 true true 25 135 15 186 10 200 23 217 25 188 35 141
-Polygon -7500403 true true 270 150 253 100 231 94 213 100 208 135
-Polygon -7500403 true true 225 120 204 66 207 29 185 56 178 27 171 59 150 45 165 90
-Polygon -7500403 true true 225 120 249 61 241 31 265 56 272 27 280 59 300 45 285 90
-
-moose-face
-false
-0
-Circle -7566196 true true 101 110 95
-Circle -7566196 true true 111 170 77
-Polygon -7566196 true true 135 243 140 267 144 253 150 272 156 250 158 258 161 241
-Circle -16777216 true false 127 222 9
-Circle -16777216 true false 157 222 8
-Circle -1 true false 118 143 16
-Circle -1 true false 159 143 16
-Polygon -7566196 true true 106 135 88 135 71 111 79 95 86 110 111 121
-Polygon -7566196 true true 205 134 190 135 185 122 209 115 212 99 218 118
-Polygon -7566196 true true 118 118 95 98 69 84 23 76 8 35 27 19 27 40 38 47 48 16 55 23 58 41 71 35 75 15 90 19 86 38 100 49 111 76 117 99
-Polygon -7566196 true true 167 112 190 96 221 84 263 74 276 30 258 13 258 35 244 38 240 11 230 11 226 35 212 39 200 15 192 18 195 43 169 64 165 92
+Polygon -7500403 true true 225 150 285 195 285 285 255 300 255 210 180 165
+Polygon -7500403 true true 75 150 15 195 15 285 45 300 45 210 120 165
+Polygon -7500403 true true 210 210 225 285 195 285 165 165
+Polygon -7500403 true true 90 210 75 285 105 285 135 165
+Rectangle -7500403 true true 135 165 165 270
 
 orbit 1
 true
 0
 Circle -7500403 true true 116 11 67
 Circle -7500403 false true 41 41 218
-
-orbit 2
-true
-0
-Circle -7500403 true true 116 221 67
-Circle -7500403 true true 116 11 67
-Circle -7500403 false true 44 44 212
 
 orbit 3
 true
@@ -736,36 +447,6 @@ Circle -7500403 true true 116 11 67
 Circle -7500403 true true 26 176 67
 Circle -7500403 true true 206 176 67
 Circle -7500403 false true 45 45 210
-
-orbit 4
-true
-0
-Circle -7500403 true true 116 11 67
-Circle -7500403 true true 116 221 67
-Circle -7500403 true true 221 116 67
-Circle -7500403 false true 45 45 210
-Circle -7500403 true true 11 116 67
-
-orbit 5
-true
-0
-Circle -7500403 true true 116 11 67
-Circle -7500403 true true 13 89 67
-Circle -7500403 true true 178 206 67
-Circle -7500403 true true 53 204 67
-Circle -7500403 true true 220 91 67
-Circle -7500403 false true 45 45 210
-
-orbit 6
-true
-0
-Circle -7500403 true true 116 11 67
-Circle -7500403 true true 26 176 67
-Circle -7500403 true true 206 176 67
-Circle -7500403 false true 45 45 210
-Circle -7500403 true true 26 58 67
-Circle -7500403 true true 206 58 67
-Circle -7500403 true true 116 221 67
 
 pentagon
 false
@@ -780,201 +461,6 @@ Polygon -7500403 true true 105 90 120 195 90 285 105 300 135 300 150 225 165 300
 Rectangle -7500403 true true 127 79 172 94
 Polygon -7500403 true true 195 90 240 150 225 180 165 105
 Polygon -7500403 true true 105 90 60 150 75 180 135 105
-
-person business
-false
-0
-Rectangle -1 true false 120 90 180 180
-Polygon -13345367 true false 135 90 150 105 135 180 150 195 165 180 150 105 165 90
-Polygon -7500403 true true 120 90 105 90 60 195 90 210 116 154 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 183 153 210 210 240 195 195 90 180 90 150 165
-Circle -7500403 true true 110 5 80
-Rectangle -7500403 true true 127 76 172 91
-Line -16777216 false 172 90 161 94
-Line -16777216 false 128 90 139 94
-Polygon -13345367 true false 195 225 195 300 270 270 270 195
-Rectangle -13791810 true false 180 225 195 300
-Polygon -14835848 true false 180 226 195 226 270 196 255 196
-Polygon -13345367 true false 209 202 209 216 244 202 243 188
-Line -16777216 false 180 90 150 165
-Line -16777216 false 120 90 150 165
-
-person construction
-false
-0
-Rectangle -7500403 true true 123 76 176 95
-Polygon -1 true false 105 90 60 195 90 210 115 162 184 163 210 210 240 195 195 90
-Polygon -13345367 true false 180 195 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285
-Circle -7500403 true true 110 5 80
-Line -16777216 false 148 143 150 196
-Rectangle -16777216 true false 116 186 182 198
-Circle -1 true false 152 143 9
-Circle -1 true false 152 166 9
-Rectangle -16777216 true false 179 164 183 186
-Polygon -955883 true false 180 90 195 90 195 165 195 195 150 195 150 120 180 90
-Polygon -955883 true false 120 90 105 90 105 165 105 195 150 195 150 120 120 90
-Rectangle -16777216 true false 135 114 150 120
-Rectangle -16777216 true false 135 144 150 150
-Rectangle -16777216 true false 135 174 150 180
-Polygon -955883 true false 105 42 111 16 128 2 149 0 178 6 190 18 192 28 220 29 216 34 201 39 167 35
-Polygon -6459832 true false 54 253 54 238 219 73 227 78
-Polygon -16777216 true false 15 285 15 255 30 225 45 225 75 255 75 270 45 285
-
-person doctor
-false
-0
-Polygon -7500403 true true 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
-Polygon -13345367 true false 135 90 150 105 135 135 150 150 165 135 150 105 165 90
-Polygon -7500403 true true 105 90 60 195 90 210 135 105
-Polygon -7500403 true true 195 90 240 195 210 210 165 105
-Circle -7500403 true true 110 5 80
-Rectangle -7500403 true true 127 79 172 94
-Polygon -1 true false 105 90 60 195 90 210 114 156 120 195 90 270 210 270 180 195 186 155 210 210 240 195 195 90 165 90 150 150 135 90
-Line -16777216 false 150 148 150 270
-Line -16777216 false 196 90 151 149
-Line -16777216 false 104 90 149 149
-Circle -1 true false 180 0 30
-Line -16777216 false 180 15 120 15
-Line -16777216 false 150 195 165 195
-Line -16777216 false 150 240 165 240
-Line -16777216 false 150 150 165 150
-
-person farmer
-false
-0
-Polygon -7500403 true true 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
-Polygon -1 true false 60 195 90 210 114 154 120 195 180 195 187 157 210 210 240 195 195 90 165 90 150 105 150 150 135 90 105 90
-Circle -7500403 true true 110 5 80
-Rectangle -7500403 true true 127 79 172 94
-Polygon -13345367 true false 120 90 120 180 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 180 90 172 89 165 135 135 135 127 90
-Polygon -6459832 true false 116 4 113 21 71 33 71 40 109 48 117 34 144 27 180 26 188 36 224 23 222 14 178 16 167 0
-Line -16777216 false 225 90 270 90
-Line -16777216 false 225 15 225 90
-Line -16777216 false 270 15 270 90
-Line -16777216 false 247 15 247 90
-Rectangle -6459832 true false 240 90 255 300
-
-person graduate
-false
-0
-Circle -16777216 false false 39 183 20
-Polygon -1 true false 50 203 85 213 118 227 119 207 89 204 52 185
-Circle -7500403 true true 110 5 80
-Rectangle -7500403 true true 127 79 172 94
-Polygon -8630108 true false 90 19 150 37 210 19 195 4 105 4
-Polygon -8630108 true false 120 90 105 90 60 195 90 210 120 165 90 285 105 300 195 300 210 285 180 165 210 210 240 195 195 90
-Polygon -1184463 true false 135 90 120 90 150 135 180 90 165 90 150 105
-Line -2674135 false 195 90 150 135
-Line -2674135 false 105 90 150 135
-Polygon -1 true false 135 90 150 105 165 90
-Circle -1 true false 104 205 20
-Circle -1 true false 41 184 20
-Circle -16777216 false false 106 206 18
-Line -2674135 false 208 22 208 57
-
-person lumberjack
-false
-0
-Polygon -7500403 true true 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
-Polygon -2674135 true false 60 196 90 211 114 155 120 196 180 196 187 158 210 211 240 196 195 91 165 91 150 106 150 135 135 91 105 91
-Circle -7500403 true true 110 5 80
-Rectangle -7500403 true true 127 79 172 94
-Polygon -6459832 true false 174 90 181 90 180 195 165 195
-Polygon -13345367 true false 180 195 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285
-Polygon -6459832 true false 126 90 119 90 120 195 135 195
-Rectangle -6459832 true false 45 180 255 195
-Polygon -16777216 true false 255 165 255 195 240 225 255 240 285 240 300 225 285 195 285 165
-Line -16777216 false 135 165 165 165
-Line -16777216 false 135 135 165 135
-Line -16777216 false 90 135 120 135
-Line -16777216 false 105 120 120 120
-Line -16777216 false 180 120 195 120
-Line -16777216 false 180 135 210 135
-Line -16777216 false 90 150 105 165
-Line -16777216 false 225 165 210 180
-Line -16777216 false 75 165 90 180
-Line -16777216 false 210 150 195 165
-Line -16777216 false 180 105 210 180
-Line -16777216 false 120 105 90 180
-Line -16777216 false 150 135 150 165
-Polygon -2674135 true false 100 30 104 44 189 24 185 10 173 10 166 1 138 -1 111 3 109 28
-
-person police
-false
-0
-Polygon -1 true false 124 91 150 165 178 91
-Polygon -13345367 true false 134 91 149 106 134 181 149 196 164 181 149 106 164 91
-Polygon -13345367 true false 180 195 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285
-Polygon -13345367 true false 120 90 105 90 60 195 90 210 116 158 120 195 180 195 184 158 210 210 240 195 195 90 180 90 165 105 150 165 135 105 120 90
-Rectangle -7500403 true true 123 76 176 92
-Circle -7500403 true true 110 5 80
-Polygon -13345367 true false 150 26 110 41 97 29 137 -1 158 6 185 0 201 6 196 23 204 34 180 33
-Line -13345367 false 121 90 194 90
-Line -16777216 false 148 143 150 196
-Rectangle -16777216 true false 116 186 182 198
-Rectangle -16777216 true false 109 183 124 227
-Rectangle -16777216 true false 176 183 195 205
-Circle -1 true false 152 143 9
-Circle -1 true false 152 166 9
-Polygon -1184463 true false 172 112 191 112 185 133 179 133
-Polygon -1184463 true false 175 6 194 6 189 21 180 21
-Line -1184463 false 149 24 197 24
-Rectangle -16777216 true false 101 177 122 187
-Rectangle -16777216 true false 179 164 183 186
-
-person service
-false
-0
-Polygon -7500403 true true 180 195 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285
-Polygon -1 true false 120 90 105 90 60 195 90 210 120 150 120 195 180 195 180 150 210 210 240 195 195 90 180 90 165 105 150 165 135 105 120 90
-Polygon -1 true false 123 90 149 141 177 90
-Rectangle -7500403 true true 123 76 176 92
-Circle -7500403 true true 110 5 80
-Line -13345367 false 121 90 194 90
-Line -16777216 false 148 143 150 196
-Rectangle -16777216 true false 116 186 182 198
-Circle -1 true false 152 143 9
-Circle -1 true false 152 166 9
-Rectangle -16777216 true false 179 164 183 186
-Polygon -2674135 true false 180 90 195 90 183 160 180 195 150 195 150 135 180 90
-Polygon -2674135 true false 120 90 105 90 114 161 120 195 150 195 150 135 120 90
-Polygon -2674135 true false 155 91 128 77 128 101
-Rectangle -16777216 true false 118 129 141 140
-Polygon -2674135 true false 145 91 172 77 172 101
-
-person soldier
-false
-0
-Rectangle -7500403 true true 127 79 172 94
-Polygon -10899396 true false 105 90 60 195 90 210 135 105
-Polygon -10899396 true false 195 90 240 195 210 210 165 105
-Circle -7500403 true true 110 5 80
-Polygon -10899396 true false 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
-Polygon -6459832 true false 120 90 105 90 180 195 180 165
-Line -6459832 false 109 105 139 105
-Line -6459832 false 122 125 151 117
-Line -6459832 false 137 143 159 134
-Line -6459832 false 158 179 181 158
-Line -6459832 false 146 160 169 146
-Rectangle -6459832 true false 120 193 180 201
-Polygon -6459832 true false 122 4 107 16 102 39 105 53 148 34 192 27 189 17 172 2 145 0
-Polygon -16777216 true false 183 90 240 15 247 22 193 90
-Rectangle -6459832 true false 114 187 128 208
-Rectangle -6459832 true false 177 187 191 208
-
-person student
-false
-0
-Polygon -13791810 true false 135 90 150 105 135 165 150 180 165 165 150 105 165 90
-Polygon -7500403 true true 195 90 240 195 210 210 165 105
-Circle -7500403 true true 110 5 80
-Rectangle -7500403 true true 127 79 172 94
-Polygon -7500403 true true 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
-Polygon -1 true false 100 210 130 225 145 165 85 135 63 189
-Polygon -13791810 true false 90 210 120 225 135 165 67 130 53 189
-Polygon -1 true false 120 224 131 225 124 210
-Line -16777216 false 139 168 126 225
-Line -16777216 false 140 167 76 136
-Polygon -7500403 true true 105 90 60 195 90 210 135 105
 
 plant
 false
@@ -1075,64 +561,6 @@ Polygon -10899396 true false 132 85 134 64 107 51 108 17 150 2 192 18 192 52 169
 Polygon -10899396 true false 85 204 60 233 54 254 72 266 85 252 107 210
 Polygon -7500403 true true 119 75 179 75 209 101 224 135 220 225 175 261 128 261 81 224 74 135 88 99
 
-turtle 2
-true
-0
-Polygon -10899396 true false 132 85 134 64 130 57 132 32 151 22 171 33 173 57 169 65 172 87
-Polygon -10899396 true false 165 210 195 210 240 240 240 255 210 285 195 255
-Polygon -10899396 true false 90 210 60 240 60 255 90 285 105 255 120 210
-Polygon -7500403 true true 119 75 179 75 209 101 224 135 209 225 155 275 143 275 89 225 74 135 88 99
-Polygon -16777216 true false 151 21 142 26 159 26
-Line -16777216 false 160 35 164 51
-Polygon -16777216 true false 161 38 162 46 167 45
-Line -16777216 false 169 63 156 69
-Line -16777216 false 134 64 144 69
-Line -16777216 false 143 69 156 69
-Polygon -16777216 true false 139 38 138 46 133 45
-Line -16777216 false 140 35 136 51
-Polygon -10899396 true false 195 90 225 75 255 75 270 90 285 120 285 150 240 105 225 105 210 105
-Polygon -10899396 true false 105 90 75 75 45 75 30 90 15 120 15 150 60 105 75 105 90 105
-
-ufo side
-false
-0
-Polygon -1 true false 0 150 15 180 60 210 120 225 180 225 240 210 285 180 300 150 300 135 285 120 240 105 195 105 150 105 105 105 60 105 15 120 0 135
-Polygon -16777216 false false 105 105 60 105 15 120 0 135 0 150 15 180 60 210 120 225 180 225 240 210 285 180 300 150 300 135 285 120 240 105 210 105
-Polygon -7500403 true true 60 131 90 161 135 176 165 176 210 161 240 131 225 101 195 71 150 60 105 71 75 101
-Circle -16777216 false false 255 135 30
-Circle -16777216 false false 180 180 30
-Circle -16777216 false false 90 180 30
-Circle -16777216 false false 15 135 30
-Circle -7500403 true true 15 135 30
-Circle -7500403 true true 90 180 30
-Circle -7500403 true true 180 180 30
-Circle -7500403 true true 255 135 30
-Polygon -16777216 false false 150 59 105 70 75 100 60 130 90 160 135 175 165 175 210 160 240 130 225 100 195 70
-
-ufo top
-false
-0
-Circle -1 true false 15 15 270
-Circle -16777216 false false 15 15 270
-Circle -7500403 true true 75 75 150
-Circle -16777216 false false 75 75 150
-Circle -7500403 true true 60 60 30
-Circle -7500403 true true 135 30 30
-Circle -7500403 true true 210 60 30
-Circle -7500403 true true 240 135 30
-Circle -7500403 true true 210 210 30
-Circle -7500403 true true 135 240 30
-Circle -7500403 true true 60 210 30
-Circle -7500403 true true 30 135 30
-Circle -16777216 false false 30 135 30
-Circle -16777216 false false 60 210 30
-Circle -16777216 false false 135 240 30
-Circle -16777216 false false 210 210 30
-Circle -16777216 false false 240 135 30
-Circle -16777216 false false 210 60 30
-Circle -16777216 false false 135 30 30
-Circle -16777216 false false 60 60 30
-
 wheel
 false
 0
@@ -1153,28 +581,11 @@ Polygon -16777216 true false 253 133 245 131 245 133
 Polygon -7500403 true true 2 194 13 197 30 191 38 193 38 205 20 226 20 257 27 265 38 266 40 260 31 253 31 230 60 206 68 198 75 209 66 228 65 243 82 261 84 268 100 267 103 261 77 239 79 231 100 207 98 196 119 201 143 202 160 195 166 210 172 213 173 238 167 251 160 248 154 265 169 264 178 247 186 240 198 260 200 271 217 271 219 262 207 258 195 230 192 198 210 184 227 164 242 144 259 145 284 151 277 141 293 140 299 134 297 127 273 119 270 105
 Polygon -7500403 true true -1 195 14 180 36 166 40 153 53 140 82 131 134 133 159 126 188 115 227 108 236 102 238 98 268 86 269 92 281 87 269 103 269 113
 
-wolf 5
-false
-0
-Polygon -7500403 true true 135 285 165 285 270 90 30 90 135 285
-Polygon -7500403 true true 270 90 225 15 180 90
-Polygon -7500403 true true 30 90 75 15 120 90
-Polygon -1 true false 225 150 180 195 165 165
-Polygon -1 true false 75 150 120 195 135 165
-Polygon -1 true false 135 285 135 255 150 240 165 255 165 285
-
 x
 false
 0
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
-
-y
-true
-0
-Line -7500403 true 150 150 105 90
-Line -7500403 true 150 150 195 90
-Line -7500403 true 150 150 150 210
 @#$#@#$#@
 NetLogo 6.1.1
 @#$#@#$#@
