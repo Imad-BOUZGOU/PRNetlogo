@@ -1,98 +1,116 @@
+;;Création des différents agents qui composent l'environnement
 breed[macrophages macrophage]
 breed[cytokines cytokine]
 breed[chemokines chemokine]
 breed[RANKLs RANKL]
 breed[MMPs MMP]
-breed[ostéoclastes ostéoclaste]
+breed[osteoclastes osteoclaste]
 breed[chondrocytes chondrocyte]
 breed[fibroblasts fibroblast]
 
+patches-own [type-patch]
+
+;; fonction de cration du monde
 to setup
+  ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
   ca
+  ;; Definir une forme initiale par défaut pour chaque agent
   set-default-shape macrophages "circle"
   set-default-shape cytokines "cytokine"
   set-default-shape chemokines "ballpin"
   set-default-shape RANKLs "dot"
   set-default-shape MMPs "dot"
-  set-default-shape ostéoclastes "monster"
+  set-default-shape osteoclastes "monster"
   set-default-shape chondrocytes "square"
   set-default-shape fibroblasts "square"
-  ;; OS
-  ask patches with [(pxcor < 0) and (pycor > 5)][set pcolor white]
-  ;; Cartilage
-  ask patches with [(pxcor < 0) and (pycor > 1) and (pycor < 6)][set pcolor white]
-  ;; Membrane Synovial
-  ask patches with [(pxcor > 14)][set pcolor yellow] ;; yellow + 1 apres inflammation red + 1
-  ;; Liquide Synovial
-  ask patches with [pcolor = black][set pcolor 48]
 
-  ask n-of nb-macrophage patches with [pcolor = 48] [
+  ;; Dessiner les différentes parties de l'espace synovial grâce aux patches
+  ;; OS
+  ask patches with [(pxcor < 0) and (pycor > 5)][set pcolor white set type-patch "os"]
+  ;; Cartilage
+  ask patches with [(pxcor < 0) and (pycor > 1) and (pycor < 6)][set pcolor cyan set type-patch "cartilage"]
+  ;; Membrane Synovial
+  ask patches with [(pxcor > 14)][set pcolor yellow set type-patch "membraneSynovial"]
+  ;; Liquide Synovial
+  ask patches with [pcolor = black][set pcolor 48 set type-patch "liquideSynovial"]
+
+  ask n-of nb-macrophage patches with [pcolor = 48] [      ;; Création des Macrophages dans le liquide synovial
     sprout-macrophages 1 [
       set color red
-      hatch-cytokines 5[
+      hatch-cytokines random 5[                            ;; Chaque Macrophage crée un nombre aléatoire [0..5] de Cytokines.
         set color grey
       ]
     ]
   ]
-  ask n-of nb-ostéoclaste patches with [(pxcor < 0) and (pycor > 5)] [
-    sprout-ostéoclastes 1 [
+  ask n-of nb-osteoclaste patches with [(pxcor < 0) and (pycor > 5)] [
+    sprout-osteoclastes 1 [                                ;; Création des osteoclastes sur l'os
       set color black
     ]
   ]
   ask patches with [(pxcor < 0) and (pycor > 1) and (pycor < 6)] [
-    sprout-chondrocytes 1[
-      set heading 180
-      set color cyan
-    ]
-  ]
-  ask n-of nb-fibroblast patches with [pcolor = yellow] [
-    sprout-fibroblasts 1[
+    sprout-chondrocytes 1[                                 ;; Création des chondrocytes sur le cartilage
       set heading 180
       set color white
     ]
   ]
-  ask turtles [set size 1.2]
+  ask n-of nb-fibroblast patches with [pcolor = yellow] [
+    sprout-fibroblasts 1[                                 ;; Création des fibroblastes sur la membrane synoviale
+      set heading 180
+      set color white
+    ]
+  ]
+  reset-ticks                                             ;; Inistalisation de l'horloge
 end
 
-to mcr_fwd
+to go
+  ;; faire deplacer les macrophage dans le Liquide Synovial
   ask macrophages[
-    if (pcolor = 48) [
-      lt random 90 rt random 90
-      ifelse ([pcolor] of patch-ahead 1 = 48)[
-        fd 1
-      ]
-      [
-        lt 180
-      ]
-    ]
+    move 48 0 0
   ]
+  ;; faire deplacer les Cytokines
   ask cytokines[
-    lt random 90
-    rt random 90
-    fd 1
-    if (any? fibroblasts-here)[
+    move 48 yellow red
+    if (any? fibroblasts-here)[    ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste : {
       ask fibroblasts-here [
         set pcolor red
-        hatch-MMPs 1[
+        hatch-MMPs random 2.5[                  ;; Crée une Cytokine MMP
           set color green
-          lt random 90 rt random 90
-          jump 5
         ]
-        hatch-RANKLs 1[
+        hatch-RANKLs random 2.5[                ;; Crée une Cytokine RANKL
           set color 126
-          lt random 90 rt random 90
-          jump 5
         ]
-        hatch-chemokines 1[
+        hatch-chemokines random 2.5[            ;; Crée une Chémokine
           set color 35
-          lt random 90 rt random 90
-          jump 5
         ]
-        die
+        die                            ;; En tue les cellule fibroblastes pour les remplacer par des inflammation
       ]
-    die
-    ]
+      die                              ;; Pour ne pas encombrer le modèle avec l'énorme quantité de Cytokines produite durant
+    ]                                  ;; la PR, on préfère les tuer apres chaque rencontre avec les Fibroblastes.
+  ]                               ;; }
+  tick
+  ask MMPs[
+    move 48 cyan red
+    if any? chondrocytes-here [ask chondrocytes-here [die] die]
   ]
+  ask RANKLs [
+    move 48 white red
+    if any? osteoclastes-here [ask osteoclastes-here [set pcolor 48 die] die]
+  ]
+  ask chemokines [
+    move 48 red 0
+    if any? macrophages-here [ask macrophages-here [hatch-cytokines random 2.5 [set color gray]] die]
+  ]
+end
+
+to move [a b c]                          ;; fonction de Deplacement
+  lt random 90 rt random 90
+    let x [pcolor] of patch-ahead 1
+    ifelse (x = a or x = b or x = c)[
+      fd 1
+    ]
+    [
+      lt 180
+    ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -123,10 +141,10 @@ ticks
 30.0
 
 BUTTON
-42
-136
-156
-169
+18
+175
+132
+208
 Create Univers
 setup
 NIL
@@ -141,26 +159,26 @@ NIL
 
 SLIDER
 17
-10
+21
 189
-43
+54
 nb-fibroblast
 nb-fibroblast
 0
 50
-14.0
+50.0
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-20
-245
-99
-278
-NIL
-mcr_fwd
+18
+227
+104
+260
+simulation
+go
 T
 1
 T
@@ -173,14 +191,14 @@ NIL
 
 SLIDER
 17
-52
+73
 189
-85
+106
 nb-macrophage
 nb-macrophage
 0
-15
-7.0
+20
+20.0
 1
 1
 NIL
@@ -188,55 +206,176 @@ HORIZONTAL
 
 SLIDER
 17
-91
+125
 189
-124
-nb-ostéoclaste
-nb-ostéoclaste
+158
+nb-osteoclaste
+nb-osteoclaste
 0
-50
-25.0
+80
+50.0
 1
 1
 NIL
 HORIZONTAL
 
+MONITOR
+714
+22
+826
+71
+% Inflammation
+int (count patches with [pcolor = red] / nb-fibroblast) * 100
+17
+1
+12
+
+MONITOR
+716
+87
+781
+132
+cytokines
+count cytokines
+17
+1
+11
+
+PLOT
+717
+144
+1285
+521
+Graphique
+time
+NIL
+0.0
+20.0
+0.0
+25.0
+true
+true
+"" ""
+PENS
+"Chemokines" 1.0 0 -6459832 true "" "plot count chemokines"
+"Cytokines" 1.0 0 -7500403 true "" "plot count cytokines"
+"MMPs" 1.0 0 -10899396 true "" "plot count MMPs"
+"RANKLs" 1.0 0 -5825686 true "" "plot count RANKLs"
+"Osteoclastes" 1.0 0 -16777216 true "" "plot count osteoclastes"
+"Macrophages" 1.0 0 -2674135 true "" "plot count macrophages"
+
+MONITOR
+790
+87
+915
+132
+Degradation de l'Os 
+(1 - ((count patches with [pcolor = white])/(count patches with [type-patch = \"os\"]))) * 100
+17
+1
+11
+
 @#$#@#$#@
-## WHAT IS IT?
+# Agents sociaux impliquee dans la **Polyarthrite Rhumatoïde**
 
-(a general understanding of what the model is trying to show or explain)
+## Introduction :
 
-## HOW IT WORKS
+La [Polyarthrite Rhumatoïde][1] ou "PR" est une maladie ou l'immunité se retourne contre le corps de la personne atteinte, elle est dite auto-immune. C’est la maladie la plus fréquente des diverses formes de rhumatismes inflammatoires chroniques, n'atteignant pas toujours uniquement les articulations, mais aussi parfois d'autre zone du corps.
 
-(what rules the agents use to create the overall behavior of the model)
+<center>
+<img src="articulation-touchees.png">
+</center>
+<center>
+<a href="https://www.lilly.fr/fr/maladie/polyarthrite-rhumatoide/articulations-touchees.aspx">Articulations les plus touchées</a>
+</center>
 
-## HOW TO USE IT
+Le système immunitaire produit des anticorps qui vont attaquer la membrane synoviale des articulations, qui est responsable de la production du liquide synoviale permettant la lubrification des mouvements. Quand cette dernière est agressée par l’auto-immunité, elle s'épaissit et fabriquera trop de liquide contenant des enzymes inflammatoire, susceptible de nuire toute l’articulation, les cartilages, les os …
 
-(how to use the model, including a description of each of the items in the Interface tab)
+<center>
+<img src="11065899.png">
+</center>
+<center>
+<a href="https://sante.journaldesfemmes.fr/maladies/2486114-polyarthrite-rhumatoide-definition-symptomes-traitement/">Espace synovial d'une main seine et une main malade</a>
+</center>
 
-## THINGS TO NOTICE
+Par notre modèle, nous voulons modéliser grace à un système multi-agents, les différents processus qui se produisent dans l’espace synovial d’une articulation atteinte de la polyarthrite rhumatoïde.
 
-(suggested things for the user to notice while running the model)
 
-## THINGS TO TRY
+## Les différents agents qui composent l'espace synovial :
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+* **Membrane Synoviale** : Constituée de cellules type-B (**`Fibroblastes`**) et type-A (**`Macrophage`**), après inflammation ces cellules produisent le **`RANKL`** et le **`MMP`**.
 
-## EXTENDING THE MODEL
+* **Liquide Synovial** : Peut contenir plusieurs éléments dont les **`Macrophages`**.
 
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+* **Os** : Le tissu osseux contient plusieurs types de cellules dont les **`Ostéoclastes`**, Ostéoblastes responsable de la destruction resp. formation osseuse.
 
-## NETLOGO FEATURES
+* **Cartilage** : Couche qui recouvre les articulations, formé de **`Chondrocytes`**.
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+* **Macrophage** : Production de **`Cytokines`** pro-inflammatoires.
 
-## RELATED MODELS
+* **Cytokine** : **`TNF-α`**, **`IL6`**, **`IL1`** (Tumor Necrosis Factor α, L'interleukine 6, L'interleukine 1).
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+* **Chémokines** : Stimule la production des **`Cytokine`** par les **`Macrophage`**.
 
-## CREDITS AND REFERENCES
+* **RANKL** : Avec les **`Cytokines`**, elles suractivent les **`Ostéoclastes`**.
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+* **MMP** : Avec les **`Cytokines`**, elles détruisent le **`Cartilage`**.
+
+* **Ostéoclastes** : Responsable de la destruction osseuse.
+
+* **Chondrocytes** : Constituent l’unique type cellulaire du **`Cartilage`**.
+
+* **Pannus** : Inflammation de la **`Membrane Synoviale`**.
+
+* **Fibroblaste** : Cellule constituant la **`Membrane Synoviale`**.
+
+## Representation des différents agents sous Netlogo
+
+<center>
+<img src="ModelisationNetLogo.png">
+</center>
+
+## Principe de fonctionnement de l’interface utilisateur
+
+### Les champs D'informations :
+
+#### Inflammation :
+
+>Affiche le pourcentage de cellules Fibroblast Infectées.
+```
+count patches with [pcolor = red]
+```
+
+#### Cytokines :
+
+>Affiche le nombre de cytokines.
+```
+count cytokines
+```
+
+
+
+## Auteurs:
+Dans le cadre de la réalisation d'une simulation de la **Polyarthrite Rhumatoïde** pour le TER ...
+
+### Ce travail a été réalisé par :
+<center>
+	<b>Yacine HADJAR</b>
+	<br>
+   	<b>Imad BOUZGOU</b>
+</center>
+
+### Encadré par :
+<center>
+	<b>Sergui Ivanov</b>
+</center>
+
+
+...
+
+[1]: https://disease-maps.org/rheumatoidarthritis        "disease-maps.org"
+[2]: http://www.rhumatologie.asso.fr/04-Rhumatismes/stop-rhumatismes/pdf-upload/Pro_polyarthrite_rhumatoide_7.pdf					 "rhumatologie.asso.fr"
+[3]: https://www.axaprevention.fr/sante-bien-etre/sante-question/polyarthrite-rhumatoide
 @#$#@#$#@
 default
 true
