@@ -248,11 +248,11 @@ PLOT
 521
 Graphique
 time
-NIL
+NbAgents
 0.0
-20.0
+10.0
 0.0
-25.0
+10.0
 true
 true
 "" ""
@@ -265,12 +265,56 @@ PENS
 "Macrophages" 1.0 0 -2674135 true "" "plot count macrophages"
 
 MONITOR
+832
+22
+973
+67
+% Degradation de l'Os 
+(1 - ((count patches with [pcolor = white])/(count patches with [type-patch = \"os\"]))) * 100
+17
+1
+11
+
+MONITOR
 790
 87
-915
+868
 132
-Degradation de l'Os 
-(1 - ((count patches with [pcolor = white])/(count patches with [type-patch = \"os\"]))) * 100
+chemokines
+count chemokines
+17
+1
+11
+
+MONITOR
+877
+87
+956
+132
+MMPs
+count MMPs
+17
+1
+11
+
+MONITOR
+964
+87
+1021
+132
+RANKLs
+Count RANKLs
+17
+1
+11
+
+MONITOR
+1032
+87
+1114
+132
+osteoclastes
+Count osteoclastes
 17
 1
 11
