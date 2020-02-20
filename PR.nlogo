@@ -1,4 +1,4 @@
-;;Création des différents agents qui composent l'environnement
+;; Création des différents agents qui composent l'environnement
 breed[macrophages macrophage]
 breed[cytokines cytokine]
 breed[chemokines chemokine]
@@ -6,13 +6,11 @@ breed[RANKLs RANKL]
 breed[MMPs MMP]
 breed[osteoclastes osteoclaste]
 breed[chondrocytes chondrocyte]
-breed[fibroblasts fibroblast]
+breed[fibroblastes fibroblaste]
 
-patches-own [type-patch]
+patches-own [type-patch]             ;; Differencier les patches
 
-;; fonction de cration du monde
-to setup
-  ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
+to setup                             ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
   ca
   ;; Definir une forme initiale par défaut pour chaque agent
   set-default-shape macrophages "circle"
@@ -22,17 +20,17 @@ to setup
   set-default-shape MMPs "dot"
   set-default-shape osteoclastes "monster"
   set-default-shape chondrocytes "square"
-  set-default-shape fibroblasts "square"
+  set-default-shape fibroblastes "square"
 
   ;; Dessiner les différentes parties de l'espace synovial grâce aux patches
   ;; OS
-  ask patches with [(pxcor < 0) and (pycor > 5)][set pcolor white set type-patch "os"]
+  ask patches with [(pxcor < 0) and (pycor > 5)][set pcolor 9.9 set type-patch "os"]
   ;; Cartilage
-  ask patches with [(pxcor < 0) and (pycor > 1) and (pycor < 6)][set pcolor cyan set type-patch "cartilage"]
+  ask patches with [(pxcor < 0) and (pycor > 1) and (pycor < 6)][set pcolor 84 set type-patch "cartilage"]
   ;; Membrane Synovial
-  ask patches with [(pxcor > 14)][set pcolor yellow set type-patch "membraneSynovial"]
+  ask patches with [(pxcor > 14)][set pcolor 45 set type-patch "membraneSynovial"]
   ;; Liquide Synovial
-  ask patches with [pcolor = black][set pcolor 48 set type-patch "liquideSynovial"]
+  ask patches with [pcolor = 0][set pcolor 48 set type-patch "liquideSynovial"]
 
   ask n-of nb-macrophage patches with [pcolor = 48] [      ;; Création des Macrophages dans le liquide synovial
     sprout-macrophages 1 [
@@ -42,71 +40,132 @@ to setup
       ]
     ]
   ]
-  ask n-of nb-osteoclaste patches with [(pxcor < 0) and (pycor > 5)] [
+  ask n-of nb-osteoclaste patches with [type-patch = "os"] [
     sprout-osteoclastes 1 [                                ;; Création des osteoclastes sur l'os
       set color black
     ]
   ]
-  ask patches with [(pxcor < 0) and (pycor > 1) and (pycor < 6)] [
+  ask patches with [type-patch = "cartilage"] [
     sprout-chondrocytes 1[                                 ;; Création des chondrocytes sur le cartilage
-      set heading 180
       set color white
     ]
   ]
-  ask n-of nb-fibroblast patches with [pcolor = yellow] [
-    sprout-fibroblasts 1[                                 ;; Création des fibroblastes sur la membrane synoviale
-      set heading 180
+  ask n-of nb-fibroblaste patches with [type-patch = "membraneSynovial"] [
+    sprout-fibroblastes 1[                                 ;; Création des fibroblastes sur la membrane synoviale
       set color white
     ]
   ]
   reset-ticks                                             ;; Inistalisation de l'horloge
 end
 
-to go
-  ;; faire deplacer les macrophage dans le Liquide Synovial
-  ask macrophages[
-    move 48 0 0
-  ]
-  ;; faire deplacer les Cytokines
-  ask cytokines[
-    move 48 yellow red
-    if (any? fibroblasts-here)[    ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste : {
-      ask fibroblasts-here [
-        set pcolor red
-        hatch-MMPs random 2.5[                  ;; Crée une Cytokine MMP
-          set color green
-        ]
-        hatch-RANKLs random 2.5[                ;; Crée une Cytokine RANKL
-          set color 126
-        ]
-        hatch-chemokines random 2.5[            ;; Crée une Chémokine
-          set color 35
-        ]
-        die                            ;; En tue les cellule fibroblastes pour les remplacer par des inflammation
-      ]
-      die                              ;; Pour ne pas encombrer le modèle avec l'énorme quantité de Cytokines produite durant
-    ]                                  ;; la PR, on préfère les tuer apres chaque rencontre avec les Fibroblastes.
-  ]                               ;; }
+to go                                ;; Lancer la simulation
+  go_cytokines
+  go_macrophages
+  go_mmps
+  go_rankls
+  go_osteoclastes
+  go_chemokines
   tick
+end
+
+to go_mmps                           ;; Faire avancer les MMPs
+  ;; faire deplacer les MMPs
   ask MMPs[
-    move 48 cyan red
-    if any? chondrocytes-here [ask chondrocytes-here [die] die]
-  ]
-  ask RANKLs [
-    move 48 white red
-    if any? osteoclastes-here [ask osteoclastes-here [set pcolor 48 die] die]
-  ]
-  ask chemokines [
-    move 48 red 0
-    if any? macrophages-here [ask macrophages-here [hatch-cytokines random 2.5 [set color gray]] die]
+    move "liquideSynovial" "membraneSynovial" "cartilage" 1
+    if any? chondrocytes-here [
+      if ChondrocyteActivation < random 100[
+        ask chondrocytes-here [
+          ifelse (pcolor < 89 and pcolor > 83) [
+            set pcolor pcolor + 0.1
+            ask MMPs-here [die]
+          ][
+            set pcolor 48
+            set type-patch "liquideSynovial"
+            die
+          ]
+        ]
+      ]
+    ]
   ]
 end
 
-to move [a b c]                          ;; fonction de Deplacement
-  lt random 90 rt random 90
-    let x [pcolor] of patch-ahead 1
+to go_rankls                         ;; Faire avancer les RANKLs
+  ;; faire deplacer les RANKLs
+  ask RANKLs [
+    move "liquideSynovial" "membraneSynovial" "os" 1
+    if any? osteoclastes-here [
+      if OsteoclasteActivation < random 100[
+        ask osteoclastes-here [
+          if (pcolor > 5) [set pcolor pcolor - 0.1]
+        ]
+        die
+      ]
+    ]
+  ]
+end
+
+to go_osteoclastes                   ;; Faire avancer les Osteoclastes
+  ;; faire deplacer les osteoclastes
+  ask osteoclastes [
+    move "os" "" "" .1
+  ]
+end
+
+to go_chemokines                     ;; Faire avancer les Chemokines
+  ask chemokines [
+    move "liquideSynovial" "membraneSynovial" "" 1
+    if any? macrophages-here [
+      if MacrophageActivation < random 100[
+        ask macrophages-here [
+          hatch-cytokines 1 [
+            set color gray
+          ]
+        ]
+        ask chemokines-here [die]
+      ]
+    ]
+  ]
+end
+
+to go_macrophages                    ;; Faire avancer les Macrophages
+  ask macrophages[
+    move "liquideSynovial" "" "" .1
+  ]
+end
+
+to go_cytokines                      ;; faire avancer les Cytokines
+  ask cytokines[
+    move "liquideSynovial" "membraneSynovial" "cartilage" 1
+    if (any? fibroblastes-here)[                  ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste : {
+      ask fibroblastes-here [
+        if FibroblasteActivation < random 100 [
+          set pcolor red
+          if ((count chondrocytes) - (count MMPs) >= 0 )[
+            hatch-MMPs 1[                         ;; Crée une MMP
+              set color green
+            ]
+          ]
+          if ((count patches with [(pcolor > 5) and (type-patch = "os")]) - (count RANKLs) >= 0 )[
+            hatch-RANKLs random 3[                ;; Crée une RANKL
+              set color 126
+            ]
+          ]
+          hatch-chemokines 1[              ;; Crée une Chémokine
+            set color 35
+          ]                                       ;; En tue les cellule fibroblastes pour les remplacer par des inflammations
+          set color red
+          ask cytokines-here [die]
+        ]                               ;; Pour ne pas encombrer le modèle avec l'énorme quantité de Cytokines produite durant
+      ]                                 ;; la PR, on préfère les tuer apres chaque rencontre avec les Fibroblastes.
+    ]
+  ]
+end
+
+to move [a b c v]                         ;; fonction de Deplacement(Espace1,Espace2,Espace3,vitesse)
+  lt random 90 rt random 90              ;; choix d'un angle de rotation aleatoir
+    let x [type-patch] of patch-ahead 1
     ifelse (x = a or x = b or x = c)[
-      fd 1
+      fd v
     ]
     [
       lt 180
@@ -115,12 +174,12 @@ end
 @#$#@#$#@
 GRAPHICS-WINDOW
 198
-11
-703
-517
+10
+708
+521
 -1
 -1
-15.061
+15.212121212121213
 1
 10
 1
@@ -145,7 +204,7 @@ BUTTON
 175
 132
 208
-Create Univers
+Créer Univers
 setup
 NIL
 1
@@ -162,22 +221,22 @@ SLIDER
 21
 189
 54
-nb-fibroblast
-nb-fibroblast
+nb-fibroblaste
+nb-fibroblaste
 0
-50
-50.0
+count patches with [type-patch = "membraneSynovial"]
+66.0
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-18
-227
-104
-260
-simulation
+19
+220
+106
+253
+Simulation
 go
 T
 1
@@ -198,7 +257,7 @@ nb-macrophage
 nb-macrophage
 0
 20
-20.0
+10.0
 1
 1
 NIL
@@ -212,29 +271,29 @@ SLIDER
 nb-osteoclaste
 nb-osteoclaste
 0
-80
-50.0
+30
+15.0
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-714
-22
-826
-71
+1003
+10
+1115
+55
 % Inflammation
-int (count patches with [pcolor = red] / nb-fibroblast) * 100
+int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / count patches with [type-patch = \"membraneSynovial\"]) * 100)
 17
 1
-12
+11
 
 MONITOR
-716
-87
-781
-132
+717
+120
+782
+165
 cytokines
 count cytokines
 17
@@ -242,44 +301,42 @@ count cytokines
 11
 
 PLOT
-717
-144
-1285
-521
+718
+169
+1325
+520
 Graphique
 time
 NbAgents
 0.0
-10.0
+101.0
 0.0
-10.0
+50.0
+false
 true
-true
-"" ""
+"" "if (ticks mod 100 = 0)[\n  set-plot-x-range (ticks) (ticks + 100)\n]"
 PENS
 "Chemokines" 1.0 0 -6459832 true "" "plot count chemokines"
 "Cytokines" 1.0 0 -7500403 true "" "plot count cytokines"
 "MMPs" 1.0 0 -10899396 true "" "plot count MMPs"
 "RANKLs" 1.0 0 -5825686 true "" "plot count RANKLs"
-"Osteoclastes" 1.0 0 -16777216 true "" "plot count osteoclastes"
-"Macrophages" 1.0 0 -2674135 true "" "plot count macrophages"
 
 MONITOR
-832
-22
-973
-67
+717
+65
+858
+110
 % Degradation de l'Os 
-(1 - ((count patches with [pcolor = white])/(count patches with [type-patch = \"os\"]))) * 100
+int((1 - ((count patches with [pcolor = white])/(count patches with [type-patch = \"os\"]))) * 100)
 17
 1
 11
 
 MONITOR
-790
-87
-868
-132
+791
+120
+869
+165
 chemokines
 count chemokines
 17
@@ -287,10 +344,10 @@ count chemokines
 11
 
 MONITOR
-877
-87
-956
-132
+878
+120
+957
+165
 MMPs
 count MMPs
 17
@@ -298,10 +355,10 @@ count MMPs
 11
 
 MONITOR
-964
-87
-1021
-132
+966
+120
+1023
+165
 RANKLs
 Count RANKLs
 17
@@ -309,15 +366,140 @@ Count RANKLs
 11
 
 MONITOR
-1032
-87
-1114
-132
+911
+10
+993
+55
 osteoclastes
 Count osteoclastes
 17
 1
 11
+
+MONITOR
+1032
+120
+1122
+165
+Chondrocytes
+count chondrocytes
+17
+1
+11
+
+SLIDER
+15
+359
+187
+392
+FibroblasteActivation
+FibroblasteActivation
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+15
+401
+192
+434
+ChondrocyteActivation
+ChondrocyteActivation
+0
+100
+85.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+15
+318
+187
+351
+OsteoclasteActivation
+OsteoclasteActivation
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+15
+276
+188
+309
+MacrophageActivation
+MacrophageActivation
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+818
+10
+898
+55
+Fibroblastes
+count fibroblastes
+17
+1
+11
+
+MONITOR
+717
+10
+804
+55
+Macrophages
+count macrophages
+17
+1
+11
+
+MONITOR
+866
+65
+1033
+110
+% Degradation du Cartilage
+int((1 - ( (count patches with [type-patch = \"cartilage\"]) / 64)) * 100)
+17
+1
+11
+
+PLOT
+1125
+10
+1325
+165
+Historique
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Chemokines" 1.0 0 -8431303 true "" "plot count chemokines"
+"Cytokines" 1.0 0 -7500403 true "" "plot count cytokines"
+"MMPs" 1.0 0 -10899396 true "" "plot count mmps"
+"RANKLs" 1.0 0 -7858858 true "" "plot count rankls"
 
 @#$#@#$#@
 # Agents sociaux impliquee dans la **Polyarthrite Rhumatoïde**
@@ -327,7 +509,7 @@ Count osteoclastes
 La [Polyarthrite Rhumatoïde][1] ou "PR" est une maladie ou l'immunité se retourne contre le corps de la personne atteinte, elle est dite auto-immune. C’est la maladie la plus fréquente des diverses formes de rhumatismes inflammatoires chroniques, n'atteignant pas toujours uniquement les articulations, mais aussi parfois d'autre zone du corps.
 
 <center>
-<img src="articulation-touchees.png">
+<img src="./img/doc/articulation-touchees.png">
 </center>
 <center>
 <a href="https://www.lilly.fr/fr/maladie/polyarthrite-rhumatoide/articulations-touchees.aspx">Articulations les plus touchées</a>
@@ -336,7 +518,7 @@ La [Polyarthrite Rhumatoïde][1] ou "PR" est une maladie ou l'immunité se retou
 Le système immunitaire produit des anticorps qui vont attaquer la membrane synoviale des articulations, qui est responsable de la production du liquide synoviale permettant la lubrification des mouvements. Quand cette dernière est agressée par l’auto-immunité, elle s'épaissit et fabriquera trop de liquide contenant des enzymes inflammatoire, susceptible de nuire toute l’articulation, les cartilages, les os …
 
 <center>
-<img src="11065899.png">
+<img src="./img/doc/11065899.png">
 </center>
 <center>
 <a href="https://sante.journaldesfemmes.fr/maladies/2486114-polyarthrite-rhumatoide-definition-symptomes-traitement/">Espace synovial d'une main seine et une main malade</a>
@@ -376,28 +558,145 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 ## Representation des différents agents sous Netlogo
 
 <center>
-<img src="ModelisationNetLogo.png">
+<img src="./img/doc/ModelisationNetLogo.png">
 </center>
 
-## Principe de fonctionnement de l’interface utilisateur
+## Schéma résumant les différentes interactions entre les agents de la PR
 
-### Les champs D'informations :
+<center>
+<img src="./img/doc/netlogo-diagram.png">
+</center>
+
+
+## Composants de l’interface utilisateur
+
+### Les Bouttons  :
+
+#### Créer Univers : 
+> Bouton pour charger l'environement (patches et tortues).
+
+#### Simulation : 
+> Bouton qui permet d'executer la simulation.
+
+### Les sliders :
+
+#### nb-fibroblast
+> Permet de contrôler le nombre de Fibroblastes à générer pour la simulation (à régler avant le chargement de l’environnement) . 
+
+#### nb-macrophage
+> Permet de contrôler le nombre de Macrophages à générer pour la simulation (à régler avant le chargement de l’environnement) .
+
+#### nb-osteoclaste
+> Permet de contrôler le nombre d'Osteoclastes à générer pour la simulation (à régler avant le chargement de l’environnement) .
+
+#### MacrophageActivation
+> Permet de contrôler l’efficacité des Macrophages, plus la valeur est très grande (> 50) cela permettra aux macrophages d’avoir une meilleure résistance face aux Chémokines.
+
+
+#### OstéoclasteActivation
+> Permet de contrôler l’efficacité des Ostéoclastes, plus la valeur est très grande (> 50) cela permettra aux Ostéoclastes d’avoir une meilleure résistance face aux RANKLs.
+
+
+
+#### FibroblasteActivation
+> Permet de contrôler l’efficacité des Fibroblastes, plus la valeur est très grande (> 50) cela permettra aux Fibroblastes d’avoir une meilleure résistance face aux Cytokines.
+
+
+#### ChondrocyteActivation
+> Permet de contrôler l’efficacité des Chondrocytes, plus la valeur est très grande (> 50) cela permettra aux Chondrocytes d’avoir une meilleure résistance face aux MMPs.
+
+
+### Les champs d'informations :
 
 #### Inflammation :
 
->Affiche le pourcentage de cellules Fibroblast Infectées.
+>permet d'afficher le pourcentage de cellules Fibroblast Infectées.
 ```
 count patches with [pcolor = red]
 ```
 
 #### Cytokines :
 
->Affiche le nombre de cytokines.
+>permet d'afficher le nombre de cytokines.
 ```
 count cytokines
 ```
 
+#### MMPs :
 
+>permet d'afficher le nombre de MMPs.
+```
+count MMPs
+```
+
+#### Chemokines :
+
+>permet d'afficher le nombre de chemokines.
+```
+count chemokines
+```
+
+#### RANKLs :
+
+>permet d'afficher le nombre de RANKLs.
+```
+count RANKLs
+```
+
+#### Osteoclastes :
+
+>permet d'afficher le nombre de Osteoclastes.
+```
+Count osteoclastes
+```
+
+#### %Degradation de l'os :
+
+>permet d'afficher le nombre de cytokines.
+```
+(1 - (count patches with [pcolor = white]/count patches with [type-patch = "os"])) * 100
+```
+
+## Comment utiliser l’application !
+
+**1**. Régler le nombre de chacune d'agents à créer (**Fibroblastes**, **Macrophages**, **Ostéoclastes**).
+<center>
+<img src="./img/info/nb-fibroblaste.png">
+<img src="./img/info/nb-macrophage.png">
+<img src="./img/info/nb-osteoclaste.png">
+</center>
+
+**2**. Définir le niveau d'efficacité de chaque agent par rapport aux autres agents (**Macrophage-Chémokine**, **Fibroblaste-Cytokine**, **Ostéoclaste-RANKL**, **Chondrocyte-MMP**).
+
+<center>
+<img src="./img/info/controleActivation1.png">
+<img src="./img/info/controleActivation2.png">
+</center>
+
+**3**. Créer le monde de la simulation grâce au bouton **Créer Univers**.
+<img src="./img/info/creerUnivers.png">
+
+**4**. Lancer la simulation avec le bouton **Simulation**.
+<img src="./img/info/simulation.png">
+
+
+**5**. Observer les résultats de l’exécution sur le diagramme et les champs d’informations qui renseignent le nombre d’**instance restantes**, **niveau de dégradation de l’os**, **niveau d’inflammation** …
+<center>
+<img src="./img/info/infoAgents.png">
+</center>
+<center>
+<img src="./img/info/inflammation.png">
+<img src="./img/info/degOS.png">
+</center>
+<center>
+<img src="./img/info/graphique.png">
+</center>
+
+**6**. Durant toute la période de la simulation, il est possible de régler la vitesse du modèle.
+Plus à **gauche** « `vitesse faible` », au **centre** « `vitesse normale` », plus à **droite** « `vitesse élevée` »
+<center>
+<img src="./img/info/vitesse.png">
+</center>
 
 ## Auteurs:
 Dans le cadre de la réalisation d'une simulation de la **Polyarthrite Rhumatoïde** pour le TER ...
