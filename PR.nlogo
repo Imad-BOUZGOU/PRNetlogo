@@ -1,4 +1,4 @@
-;; Création des différents agents qui composent l'environnement
+;; Création des différentes famille d'agents qui composent l'environnement
 breed[macrophages macrophage]
 breed[cytokines cytokine]
 breed[chemokines chemokine]
@@ -32,30 +32,30 @@ to setup                                    ;; Efface tout et réinitialise tout
   ;; Liquide Synovial
   ask patches with [pcolor = 0][set pcolor 48 set type-patch "liquideSynovial"]
 
-  ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [      ;; Création des Macrophages dans le liquide synovial
+  ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [      ;; Création des Macrophages dans le Liquide Synovial
     sprout-macrophages 1 [
       set color red
-      hatch-cytokines random 5[                            ;; Chaque Macrophage crée un nombre aléatoire [0..5] de Cytokines.
+      hatch-cytokines random 5[                                               ;; Chaque Macrophage crée un nombre aléatoire [0..5] de Cytokines.
         set color grey
       ]
     ]
   ]
   ask n-of nb-osteoclaste patches with [type-patch = "os"] [
-    sprout-osteoclastes 1 [                                ;; Création des osteoclastes sur l'os
+    sprout-osteoclastes 1 [                                                   ;; Création des Osteoclastes sur l'Os
       set color black
     ]
   ]
   ask patches with [type-patch = "cartilage"] [
-    sprout-chondrocytes 1[                                 ;; Création des chondrocytes sur le cartilage
+    sprout-chondrocytes 1[                                                    ;; Création des Chondrocytes sur le Cartilage
       set color white
     ]
   ]
   ask n-of nb-fibroblaste patches with [type-patch = "membraneSynovial"] [
-    sprout-fibroblastes 1[                                 ;; Création des fibroblastes sur la membrane synoviale
+    sprout-fibroblastes 1[                                                    ;; Création des Fibroblastes sur la Membrane Synoviale
       set color white
     ]
   ]
-  reset-ticks                                             ;; Inistalisation de l'horloge
+  reset-ticks                                                                 ;; Inistalisation de l'horloge
 end
 
 to go                                       ;; Lancer la simulation
@@ -69,37 +69,37 @@ to go                                       ;; Lancer la simulation
 end
 
 to go_mmps                                  ;; Faire avancer les MMPs
-  ;; faire deplacer les MMPs
   ask MMPs[
     move "liquideSynovial" "membraneSynovial" "" 1
     if any? chondrocytes-on neighbors4 [
       if ChondrocyteActivation < random 100[
-        ask one-of chondrocytes-on neighbors4 [
-          ifelse (pcolor < 89 and pcolor > 83) [
-            set pcolor pcolor + .1
-            ask MMPs-on neighbors4 [die]
-          ][
-            set pcolor 48
-            set type-patch "liquideSynovial"
-            die
-          ]
-        ]
+        destructCartilage
+        die
+      ]
+    ]
+  ]
+end
+
+to destructCartilage                        ;; Destruction du Cartilage par les MMPs
+  ask Chondrocytes [
+    if any? MMPs-on neighbors4[
+      ifelse (pcolor < 89 and pcolor > 83) [
+        set pcolor pcolor + 0.1
+      ]
+      [
+        set pcolor 48
+        set type-patch "liquideSynovial"
+        die
       ]
     ]
   ]
 end
 
 to go_rankls                                ;; Faire avancer les RANKLs
-  ;; faire deplacer les RANKLs
   ask RANKLs [
     move "liquideSynovial" "membraneSynovial" "os" 1
     if any? osteoclastes-here [
       if OsteoclasteActivation < random 100[
-        ask osteoclastes-here [
-          if (pcolor > 5) [
-            set pcolor pcolor - 0.1
-          ]
-        ]
         die
       ]
     ]
@@ -107,21 +107,35 @@ to go_rankls                                ;; Faire avancer les RANKLs
 end
 
 to go_osteoclastes                          ;; Faire avancer les Osteoclastes
-  ;; faire deplacer les osteoclastes
   ask osteoclastes [
+    if any? RANKLs-here[
+      if (pcolor > 5) [
+        destructBone                        ;; Destruction des Os
+      ]
+    ]
     move "os" "" "" 1
+  ]
+end
+
+to destructBone                             ;; Destruction des OS par les Osteoclastes
+  ask patch-here[
+    set pcolor pcolor - 0.5
   ]
 end
 
 to go_chemokines                            ;; Faire avancer les Chemokines
   ask chemokines [
     move "liquideSynovial" "membraneSynovial" "" 1
-    if any? macrophages-here [
+  ]
+end
+
+to go_macrophages                           ;; Faire avancer les Macrophages
+  ask macrophages[
+    move "liquideSynovial" "" "" .1
+    if any? Chemokines-here [
       if MacrophageActivation < random 100[
-        ask macrophages-here [
-          hatch-cytokines 1 [
-            set color gray
-          ]
+        hatch-cytokines 1 [                 ;; Création des Cytokines par les Macrophages grâce au Chemokines
+          set color gray
         ]
         ask chemokines-here [die]
       ]
@@ -129,57 +143,48 @@ to go_chemokines                            ;; Faire avancer les Chemokines
   ]
 end
 
-to go_macrophages                           ;; Faire avancer les Macrophages
-  ask macrophages[
-    move "liquideSynovial" "" "" .1
-  ]
-end
-
 to go_cytokines                             ;; faire avancer les Cytokines
   ask cytokines[
     move "liquideSynovial" "membraneSynovial" "" 1
     if (any? fibroblastes-here)[                  ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste : {
-      ask fibroblastes-here [
-        if FibroblasteActivation < random 100 [
-          set pcolor red
-          if ((count chondrocytes) - (count MMPs) >= 0 )[
-            hatch-MMPs 1[                         ;; Crée une MMP
-              set color green
-            ]
-          ]
-          if ((count patches with [(pcolor > 5) and (type-patch = "os")]) - (count RANKLs) >= 0 )[
-            hatch-RANKLs random 3[                ;; Crée une RANKL
-              set color 126
-            ]
-          ]
-          hatch-chemokines 1[              ;; Crée une Chémokine
-            set color 35
-          ]                                       ;; En tue les cellule fibroblastes pour les remplacer par des inflammations
-          set color red
-          ask cytokines-here [die]
-        ]                               ;; Pour ne pas encombrer le modèle avec l'énorme quantité de Cytokines produite durant
-      ]                                 ;; la PR, on préfère les tuer apres chaque rencontre avec les Fibroblastes.
+      if FibroblasteActivation < random 100 [
+        MembraneSynovialInflammation              ;; Appelle a la fonction de l'inflammation de la Membrane Synoviale
+      ]
     ]
-
-    ;;
-  ;  if (any? chondrocytes-on patch-ahead 1)[
-  ;    if ((count chondrocytes) - (count MMPs) >= 0 )[
-  ;      hatch-MMPs 1[                         ;; Crée une MMP
-  ;        set color green
-  ;      ]
-  ;    ]
-  ;  ]
   ]
 end
 
-to move [a b c v]                           ;; fonction de Deplacement(Espace1,Espace2,Espace3,vitesse)
-  lt random 90 rt random 90                 ;; choix d'un angle de rotation aleatoir
-    let x [type-patch] of patch-ahead 1
-    ifelse (x = a or x = b or x = c)[
-      fd v
+to MembraneSynovialInflammation             ;; Inflammation de la Membrane Synoviale
+  ask fibroblastes[
+    if any? Cytokines-here[                 ;; A la presence de Cytokines les Fibroblastes
+      set pcolor red
+      if ((count chondrocytes) - (count MMPs) >= 0 )[
+        hatch-MMPs 1[                       ;; Crée une MMP
+          set color green
+        ]
+      ]
+      if ((count patches with [(pcolor > 5) and (type-patch = "os")]) - (count RANKLs) >= 0 )[
+        hatch-RANKLs 1[                     ;; Crée une RANKL
+          set color 126
+        ]
+      ]
+      hatch-chemokines 1[                   ;; Crée une Chémokine
+        set color 35
+      ]
+      set color red                         ;; Changer la couleur de la Fibroblaste en Rouge
+      ask cytokines-here [die]
     ]
-    [
-      lt 180
+  ]
+end
+
+to move [a b c v]                           ;; Fonction de Deplacement(Espace1,Espace2,Espace3,vitesse)
+  lt random 90 rt random 90                 ;; Choix d'un angle de rotation aleatoir
+    let x [type-patch] of patch-ahead 1
+    ifelse (x = a or x = b or x = c)[       ;; Si l'espace est "a" ou "b" ou "c"
+      fd v                                  ;; faire avancer la tortue avec une distance v
+    ]
+    [                                       ;; Sinon si l'espace est different de "a" ou "b" ou "c"
+      lt 180                                ;; retourner la tortue de 180°
     ]
 end
 @#$#@#$#@
