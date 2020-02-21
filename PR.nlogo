@@ -8,9 +8,9 @@ breed[osteoclastes osteoclaste]
 breed[chondrocytes chondrocyte]
 breed[fibroblastes fibroblaste]
 
-patches-own [type-patch]             ;; Differencier les patches
+patches-own [type-patch]                    ;; Differencier les patches
 
-to setup                             ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
+to setup                                    ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
   ca
   ;; Definir une forme initiale par défaut pour chaque agent
   set-default-shape macrophages "circle"
@@ -32,7 +32,7 @@ to setup                             ;; Efface tout et réinitialise tout aux va
   ;; Liquide Synovial
   ask patches with [pcolor = 0][set pcolor 48 set type-patch "liquideSynovial"]
 
-  ask n-of nb-macrophage patches with [pcolor = 48] [      ;; Création des Macrophages dans le liquide synovial
+  ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [      ;; Création des Macrophages dans le liquide synovial
     sprout-macrophages 1 [
       set color red
       hatch-cytokines random 5[                            ;; Chaque Macrophage crée un nombre aléatoire [0..5] de Cytokines.
@@ -58,7 +58,7 @@ to setup                             ;; Efface tout et réinitialise tout aux va
   reset-ticks                                             ;; Inistalisation de l'horloge
 end
 
-to go                                ;; Lancer la simulation
+to go                                       ;; Lancer la simulation
   go_cytokines
   go_macrophages
   go_mmps
@@ -68,16 +68,16 @@ to go                                ;; Lancer la simulation
   tick
 end
 
-to go_mmps                           ;; Faire avancer les MMPs
+to go_mmps                                  ;; Faire avancer les MMPs
   ;; faire deplacer les MMPs
   ask MMPs[
-    move "liquideSynovial" "membraneSynovial" "cartilage" 1
-    if any? chondrocytes-here [
+    move "liquideSynovial" "membraneSynovial" "" 1
+    if any? chondrocytes-on neighbors4 [
       if ChondrocyteActivation < random 100[
-        ask chondrocytes-here [
+        ask chondrocytes-on neighbors4 [
           ifelse (pcolor < 89 and pcolor > 83) [
-            set pcolor pcolor + 0.1
-            ask MMPs-here [die]
+            set pcolor pcolor + .1
+            ask MMPs-on neighbors4 [ set pcolor red die]
           ][
             set pcolor 48
             set type-patch "liquideSynovial"
@@ -89,14 +89,16 @@ to go_mmps                           ;; Faire avancer les MMPs
   ]
 end
 
-to go_rankls                         ;; Faire avancer les RANKLs
+to go_rankls                                ;; Faire avancer les RANKLs
   ;; faire deplacer les RANKLs
   ask RANKLs [
     move "liquideSynovial" "membraneSynovial" "os" 1
     if any? osteoclastes-here [
       if OsteoclasteActivation < random 100[
         ask osteoclastes-here [
-          if (pcolor > 5) [set pcolor pcolor - 0.1]
+          if (pcolor > 5) [
+            set pcolor pcolor - 0.1
+          ]
         ]
         die
       ]
@@ -104,14 +106,14 @@ to go_rankls                         ;; Faire avancer les RANKLs
   ]
 end
 
-to go_osteoclastes                   ;; Faire avancer les Osteoclastes
+to go_osteoclastes                          ;; Faire avancer les Osteoclastes
   ;; faire deplacer les osteoclastes
   ask osteoclastes [
-    move "os" "" "" .1
+    move "os" "" "" 1
   ]
 end
 
-to go_chemokines                     ;; Faire avancer les Chemokines
+to go_chemokines                            ;; Faire avancer les Chemokines
   ask chemokines [
     move "liquideSynovial" "membraneSynovial" "" 1
     if any? macrophages-here [
@@ -127,15 +129,15 @@ to go_chemokines                     ;; Faire avancer les Chemokines
   ]
 end
 
-to go_macrophages                    ;; Faire avancer les Macrophages
+to go_macrophages                           ;; Faire avancer les Macrophages
   ask macrophages[
     move "liquideSynovial" "" "" .1
   ]
 end
 
-to go_cytokines                      ;; faire avancer les Cytokines
+to go_cytokines                             ;; faire avancer les Cytokines
   ask cytokines[
-    move "liquideSynovial" "membraneSynovial" "cartilage" 1
+    move "liquideSynovial" "membraneSynovial" "" 1
     if (any? fibroblastes-here)[                  ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste : {
       ask fibroblastes-here [
         if FibroblasteActivation < random 100 [
@@ -158,11 +160,20 @@ to go_cytokines                      ;; faire avancer les Cytokines
         ]                               ;; Pour ne pas encombrer le modèle avec l'énorme quantité de Cytokines produite durant
       ]                                 ;; la PR, on préfère les tuer apres chaque rencontre avec les Fibroblastes.
     ]
+
+    ;;
+  ;  if (any? chondrocytes-on patch-ahead 1)[
+  ;    if ((count chondrocytes) - (count MMPs) >= 0 )[
+  ;      hatch-MMPs 1[                         ;; Crée une MMP
+  ;        set color green
+  ;      ]
+  ;    ]
+  ;  ]
   ]
 end
 
-to move [a b c v]                         ;; fonction de Deplacement(Espace1,Espace2,Espace3,vitesse)
-  lt random 90 rt random 90              ;; choix d'un angle de rotation aleatoir
+to move [a b c v]                           ;; fonction de Deplacement(Espace1,Espace2,Espace3,vitesse)
+  lt random 90 rt random 90                 ;; choix d'un angle de rotation aleatoir
     let x [type-patch] of patch-ahead 1
     ifelse (x = a or x = b or x = c)[
       fd v
@@ -173,13 +184,13 @@ to move [a b c v]                         ;; fonction de Deplacement(Espace1,Esp
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-198
+199
 10
-708
-521
+707
+519
 -1
 -1
-15.212121212121213
+15.152
 1
 10
 1
@@ -257,7 +268,7 @@ nb-macrophage
 nb-macrophage
 0
 20
-10.0
+15.0
 1
 1
 NIL
@@ -272,7 +283,7 @@ nb-osteoclaste
 nb-osteoclaste
 0
 30
-15.0
+30.0
 1
 1
 NIL
@@ -309,12 +320,12 @@ Graphique
 time
 NbAgents
 0.0
-101.0
+1000.0
 0.0
-50.0
+100.0
 false
 true
-"" "if (ticks mod 100 = 0)[\n  set-plot-x-range (ticks) (ticks + 100)\n]"
+"" "if (ticks mod 1000 = 0)[\n  set-plot-x-range (ticks) (ticks + 1000)\n]"
 PENS
 "Chemokines" 1.0 0 -6459832 true "" "plot count chemokines"
 "Cytokines" 1.0 0 -7500403 true "" "plot count cytokines"
@@ -327,7 +338,7 @@ MONITOR
 858
 110
 % Degradation de l'Os 
-int((1 - ((count patches with [pcolor = white])/(count patches with [type-patch = \"os\"]))) * 100)
+int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patches with [type-patch = \"os\"]))) * 100)
 17
 1
 11
@@ -411,7 +422,7 @@ ChondrocyteActivation
 ChondrocyteActivation
 0
 100
-85.0
+50.0
 1
 1
 NIL
