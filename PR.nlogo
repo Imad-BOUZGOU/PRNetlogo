@@ -74,7 +74,7 @@ to go_mmps                                  ;; Faire avancer les MMPs
     move "liquideSynovial" "membraneSynovial" "" 1
     if any? chondrocytes-on neighbors4 [
       if ChondrocyteActivation < random 100[
-        ask chondrocytes-on neighbors4 [
+        ask one-of chondrocytes-on neighbors4 [
           ifelse (pcolor < 89 and pcolor > 83) [
             set pcolor pcolor + .1
             ask MMPs-on neighbors4 [die]
