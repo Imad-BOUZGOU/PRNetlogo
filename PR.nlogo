@@ -77,7 +77,7 @@ to go_mmps                                  ;; Faire avancer les MMPs
         ask chondrocytes-on neighbors4 [
           ifelse (pcolor < 89 and pcolor > 83) [
             set pcolor pcolor + .1
-            ask MMPs-on neighbors4 [ set pcolor red die]
+            ask MMPs-on neighbors4 [die]
           ][
             set pcolor 48
             set type-patch "liquideSynovial"
