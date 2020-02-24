@@ -1,2 +1,1 @@
-1 - Amelioration du Code + Commentaire.
-2 - Dans l'onglet info de NetLogo une petite documentation à mettre à jours au fur et à mesure avec l'avancement du projet.
+-> Ancienne version dans le dossier v1.
