@@ -70,6 +70,7 @@ to go                                       ;; Lancer la simulation
   go_osteoclastes
   go_chemokines
   tick
+  ;;export-view (word ticks ".png")
 end
 
 to go_mmps                                  ;; Faire avancer les MMPs
