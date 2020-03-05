@@ -1,3 +1,4 @@
+extensions [import-a]
 ;; Création des différentes famille d'agents qui composent l'environnement
 breed[macrophages macrophage]
 breed[cytokines cytokine]
@@ -10,11 +11,17 @@ breed[fibroblastes fibroblaste]
 
 patches-own [type-patch]                    ;; Differencier les patches
 
-to setup                                    ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
+to-report pr-png
+    report "data:image/png;base64,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"
+end
+
+to setup-patches
   ca
   resize-world -40 40 -40 40
-  import-pcolors "EspaceSynovial.png"
+  import-a:pcolors pr-png
+end
 
+to setup-on-web                                                              ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
   ;; Definir une forme initiale par défaut pour chaque agent
   set-default-shape macrophages "circle"
   set-default-shape cytokines "cytokine"
@@ -25,15 +32,6 @@ to setup                                    ;; Efface tout et réinitialise tout
   set-default-shape chondrocytes "square"
   set-default-shape fibroblastes "square"
 
-  ;; Dessiner les différentes parties de l'espace synovial grâce aux patches
-  ;; OS
-  ask patches with [pcolor = white or pcolor = black][set type-patch "os"]
-  ;; Cartilage
-  ask patches with [pcolor = blue][set type-patch "cartilage"]
-  ;; Membrane Synovial
-  ask patches with [pcolor = yellow][set type-patch "membraneSynovial"]
-  ;; Liquide Synovial
-  ask patches with [pcolor = 48][set pcolor 48 set type-patch "liquideSynovial"]
 
   ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [      ;; Création des Macrophages dans le Liquide Synovial
     sprout-macrophages 1 [
@@ -59,7 +57,7 @@ to setup                                    ;; Efface tout et réinitialise tout
       set color white
     ]
   ]
-  reset-ticks                                                                 ;; Inistalisation de l'horloge
+  reset-ticks
 end
 
 to go                                       ;; Lancer la simulation
@@ -70,7 +68,9 @@ to go                                       ;; Lancer la simulation
   go_osteoclastes
   go_chemokines
   tick
-  #export-view (word ticks ".png")
+  ;if ticks <= 900 [
+  ;  export-view (word "./gif/" ticks ".png")
+  ;]
 end
 
 to go_mmps                                  ;; Faire avancer les MMPs
@@ -220,23 +220,6 @@ GRAPHICS-WINDOW
 ticks
 30.0
 
-BUTTON
-5
-30
-90
-63
-setup
-setup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
 SLIDER
 5
 155
@@ -246,7 +229,7 @@ nb-macrophage
 nb-macrophage
 0
 100
-50.0
+67.0
 1
 1
 NIL
@@ -261,7 +244,7 @@ nb-osteoclaste
 nb-osteoclaste
 0
 100
-50.0
+100.0
 1
 1
 NIL
@@ -446,10 +429,10 @@ PENS
 "RANKLs" 1.0 0 -7858858 true "" "plot count rankls"
 
 BUTTON
-95
-30
-180
-63
+105
+70
+190
+103
 go
 go
 T
@@ -523,12 +506,29 @@ NIL
 HORIZONTAL
 
 BUTTON
-50
+10
 70
-135
+95
 103
-drawing
-ca\nresize-world -40 40 -40 40\nimport-pcolors \"EspaceSynovial.png\"
+setup-on-web
+setup-on-web\n
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+35
+30
+167
+63
+import-background
+setup-patches
 NIL
 1
 T
