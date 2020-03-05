@@ -32,6 +32,7 @@ to setup-patches
 end
 
 to setup-on-web                                                              ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
+  ct
   ;; Definir une forme initiale par défaut pour chaque agent
   set-default-shape macrophages "circle"
   set-default-shape cytokines "cytokine"
@@ -262,13 +263,13 @@ HORIZONTAL
 SLIDER
 5
 245
-180
-278
+177
+276
 nb-fibroblaste
 nb-fibroblaste
 0
 count patches with [type-patch = "membraneSynovial"]
-668.0
+100.0
 1
 1
 NIL
