@@ -70,7 +70,9 @@ to go                                       ;; Lancer la simulation
   go_osteoclastes
   go_chemokines
   tick
-  ;;export-view (word ticks ".png")
+  ;if ticks <= 900 [
+  ;  export-view (word "./gif/" ticks ".png")
+  ;]
 end
 
 to go_mmps                                  ;; Faire avancer les MMPs
@@ -246,7 +248,7 @@ nb-macrophage
 nb-macrophage
 0
 100
-50.0
+67.0
 1
 1
 NIL
@@ -261,7 +263,7 @@ nb-osteoclaste
 nb-osteoclaste
 0
 100
-50.0
+100.0
 1
 1
 NIL
@@ -521,23 +523,6 @@ OsteoclasteActivation
 1
 NIL
 HORIZONTAL
-
-BUTTON
-50
-70
-135
-103
-drawing
-ca\nresize-world -40 40 -40 40\nimport-pcolors \"EspaceSynovial.png\"
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
 
 @#$#@#$#@
 # Agents sociaux impliquee dans la **Polyarthrite Rhumatoïde**
