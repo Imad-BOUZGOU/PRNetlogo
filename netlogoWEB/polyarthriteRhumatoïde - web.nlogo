@@ -22,7 +22,7 @@ to setup-patches
 
   ;; Dessiner les différentes parties de l'espace synovial grâce aux patches
   ;; OS
-  ask patches with [pcolor = white or pcolor = black][set type-patch "os"]
+  ask patches with [pcolor = white or pcolor = gray + 4][set type-patch "os"]
   ;; Cartilage
   ask patches with [pcolor = blue][set type-patch "cartilage"]
   ;; Membrane Synovial
@@ -264,12 +264,12 @@ SLIDER
 5
 245
 177
-276
+278
 nb-fibroblaste
 nb-fibroblaste
 0
 count patches with [type-patch = "membraneSynovial"]
-100.0
+0.0
 1
 1
 NIL
