@@ -27,7 +27,7 @@ to setup                                    ;; Efface tout et réinitialise tout
 
   ;; Dessiner les différentes parties de l'espace synovial grâce aux patches
   ;; OS
-  ask patches with [pcolor = white or pcolor = black][set type-patch "os"]
+  ask patches with [pcolor = white or pcolor = gray + 4][set type-patch "os"]
   ;; Cartilage
   ask patches with [pcolor = blue][set type-patch "cartilage"]
   ;; Membrane Synovial
