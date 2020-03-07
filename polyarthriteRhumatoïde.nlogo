@@ -69,6 +69,7 @@ to go                                       ;; Lancer la simulation
   go_rankls
   go_osteoclastes
   go_chemokines
+  go_chondrocytes
   tick
   ;if ticks <= 900 [
   ;  export-view (word "./gif/" ticks ".png")
@@ -87,11 +88,27 @@ to go_mmps                                  ;; Faire avancer les MMPs
   ]
 end
 
+to go_chondrocytes
+  ask chondrocytes[
+    if any? cytokines-on neighbors4[                 ;; A la presence de Cytokines les Fibroblastes
+      if ((count chondrocytes) - (count MMPs) >= 0 )[
+        ask one-of chondrocytes-here[
+          hatch-MMPs 1[                              ;; Crée une MMP
+            move "liquideSynovial" "membraneSynovial" "" 1
+            set color green
+            ;set pcolor pcolor + 0.5
+          ]
+        ]
+      ]
+    ]
+  ]
+end
+
 to destructCartilage                        ;; Destruction du Cartilage par les MMPs
-  ask Chondrocytes [
-    if any? MMPs-on neighbors4[
+  ask one-of Chondrocytes [
+    if any? MMPs-on neighbors4[             ;; A la presence de MMPs les Fibroblastes
       ifelse (pcolor < 109 and pcolor >= 105) [
-        set pcolor pcolor + 0.5
+        set pcolor pcolor + 1             ;; detruction du cartilage
       ]
       [
         set pcolor 48
@@ -196,13 +213,13 @@ to move [a b c v]                           ;; Fonction de Deplacement(Espace1,E
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-200
+190
 10
 713
-524
+534
 -1
 -1
-6.235
+6.36
 1
 10
 1
