@@ -1,4 +1,4 @@
-extensions [import-a]
+extensions [import-a import-a]
 ;; Création des différentes famille d'agents qui composent l'environnement
 breed[macrophages macrophage]
 breed[cytokines cytokine]
@@ -556,21 +556,15 @@ NIL
 
 La [Polyarthrite Rhumatoïde][1] ou "PR" est une maladie ou l'immunité se retourne contre le corps de la personne atteinte, elle est dite auto-immune. C’est la maladie la plus fréquente des diverses formes de rhumatismes inflammatoires chroniques, n'atteignant pas toujours uniquement les articulations, mais aussi parfois d'autre zone du corps.
 
-<center>
-<img src="./img/doc/articulation-touchees.png">
-</center>
-<center>
-<a href="https://www.lilly.fr/fr/maladie/polyarthrite-rhumatoide/articulations-touchees.aspx">Articulations les plus touchées</a>
-</center>
+![articulation-touchees](https://yacine795.github.io/PR_NetLogo/img/doc/articulation-touchees.png)
+
+[Articulations les plus touchées](https://www.lilly.fr/fr/maladie/polyarthrite-rhumatoide/articulations-touchees.aspx)
 
 Le système immunitaire produit des anticorps qui vont attaquer la membrane synoviale des articulations, qui est responsable de la production du liquide synoviale permettant la lubrification des mouvements. Quand cette dernière est agressée par l’auto-immunité, elle s'épaissit et fabriquera trop de liquide contenant des enzymes inflammatoire, susceptible de nuire toute l’articulation, les cartilages, les os …
 
-<center>
-<img src="./img/doc/11065899.png">
-</center>
-<center>
-<a href="https://sante.journaldesfemmes.fr/maladies/2486114-polyarthrite-rhumatoide-definition-symptomes-traitement/">Espace synovial d'une main seine et une main malade</a>
-</center>
+![Une main seine et une main malade](https://yacine795.github.io/PR_NetLogo/img/doc/11065899.png)
+
+[Espace synovial d'une main seine et une main malade](https://sante.journaldesfemmes.fr/maladies/2486114-polyarthrite-rhumatoide-definition-symptomes-traitement)
 
 Par notre modèle, nous voulons modéliser grace à un système multi-agents, les différents processus qui se produisent dans l’espace synovial d’une articulation atteinte de la polyarthrite rhumatoïde.
 
@@ -605,16 +599,11 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 
 ## Representation des différents agents sous Netlogo
 
-<center>
-<img src="./img/doc/ModelisationNetLogo.png">
-</center>
+![ModelisationNetLogo](https://yacine795.github.io/PR_NetLogo/img/doc/ModelisationNetLogo.png)
 
 ## Schéma résumant les différentes interactions entre les agents de la PR
 
-<center>
-<img src="./img/doc/netlogo-diagram.png">
-</center>
-
+![Netlogo Diagramme](https://yacine795.github.io/PR_NetLogo/img/doc/netlogo-diagram.png)
 
 ## Composants de l’interface utilisateur
 
@@ -726,43 +715,34 @@ int((1 -((count patches with [type-patch = "cartilage"]) / 419)) * 100)
 ## Comment utiliser l’application !
 
 **1**. Régler le nombre de chacune d'agents à créer (**Fibroblastes**, **Macrophages**, **Ostéoclastes**).
-<center>
-<img src="./img/info/nb-fibroblaste.png">
-<img src="./img/info/nb-macrophage.png">
-<img src="./img/info/nb-osteoclaste.png">
-</center>
+
+![nb-fibroblaste.png](https://yacine795.github.io/PR_NetLogo/img/info/nb-fibroblaste.png)
+![nb-macrophage.png](https://yacine795.github.io/PR_NetLogo/img/info/nb-macrophage.png)
+![nb-osteoclaste.png](https://yacine795.github.io/PR_NetLogo/img/info/nb-osteoclaste.png)
 
 **2**. Définir le niveau d'efficacité de chaque agent par rapport aux autres agents (**Macrophage-Chémokine**, **Fibroblaste-Cytokine**, **Ostéoclaste-RANKL**, **Chondrocyte-MMP**).
 
-<center>
-<img src="./img/info/controleActivation1.png">
-<img src="./img/info/controleActivation2.png">
-</center>
+![controleActivation1.png](https://yacine795.github.io/PR_NetLogo/img/info/controleActivation1.png)
+![controleActivation2.png](https://yacine795.github.io/PR_NetLogo/img/info/controleActivation2.png)
 
 **3**. Créer le monde de la simulation grâce au bouton **Créer Univers**.
-<img src="./img/info/creerUnivers.png">
+![creerUnivers.png](https://yacine795.github.io/PR_NetLogo/img/info/creerUnivers.png)
 
 **4**. Lancer la simulation avec le bouton **Simulation**.
-<img src="./img/info/simulation.png">
+![simulation.png](https://yacine795.github.io/PR_NetLogo/img/info/simulation.png)
 
 
 **5**. Observer les résultats de l’exécution sur le diagramme et les champs d’informations qui renseignent le nombre d’**instance restantes**, **niveau de dégradation de l’os**, **niveau d’inflammation** …
-<center>
-<img src="./img/info/infoAgents.png">
-</center>
-<center>
-<img src="./img/info/inflammation.png">
-<img src="./img/info/degOS.png">
-</center>
-<center>
-<img src="./img/info/graphique.png">
-</center>
+
+![infoAgents.png](https://yacine795.github.io/PR_NetLogo/img/info/infoAgents.png)
+![inflammation.png](https://yacine795.github.io/PR_NetLogo/img/info/inflammation.png)
+![degOS.png](https://yacine795.github.io/PR_NetLogo/img/info/degOS.png)
+![graphique.png](https://yacine795.github.io/PR_NetLogo/img/info/graphique.png)
 
 **6**. Durant toute la période de la simulation, il est possible de régler la vitesse du modèle.
 Plus à **gauche** « `vitesse faible` », au **centre** « `vitesse normale` », plus à **droite** « `vitesse élevée` »
-<center>
-<img src="./img/info/vitesse.png">
-</center>
+
+![vitesse.png](https://yacine795.github.io/PR_NetLogo/img/info/vitesse.png)
 
 ## Auteurs:
 Dans le cadre de la réalisation d'une simulation de la **Polyarthrite Rhumatoïde** pour le TER ...
