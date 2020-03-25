@@ -213,13 +213,13 @@ to move [a b c v]                           ;; Fonction de Deplacement(Espace1,E
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-190
+195
 10
-713
-534
+708
+524
 -1
 -1
-6.36
+6.235
 1
 10
 1
@@ -265,7 +265,7 @@ nb-macrophage
 nb-macrophage
 0
 100
-67.0
+100.0
 1
 1
 NIL
@@ -757,7 +757,7 @@ Plus à **gauche** « `vitesse faible` », au **centre** « `vitesse normale` »
 </center>
 
 ## Auteurs:
-Dans le cadre de la réalisation d'une simulation de la **Polyarthrite Rhumatoïde** pour le TER ...
+Dans le cadre de la réalisation d'une simulation de la **Polyarthrite Rhumatoïde** pour le TER du Master 1...
 
 ### Ce travail a été réalisé par :
 <center>
