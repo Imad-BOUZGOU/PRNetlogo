@@ -1,7 +1,6 @@
 ;; Création des différentes famille d'agents qui composent l'environnement
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AGENTS DE L'ESPACE SYNOVIAL
 breed[macrophages macrophage]
 ;;cytokines
@@ -21,15 +20,15 @@ breed[tolizumabs tolizumab]
 breed[mtxs mtx]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 patches-own [type-patch]                    ;; Differencier les patches
-chondrocytes-own[etat]
+chondrocytes-own[etat]                      ;; Etat des Chondrocytes
 
 to move [a b c v]                           ;; Fonction de Deplacement(Espace1,Espace2,Espace3,vitesse)
-  lt random 90 rt random 90                 ;; Choix d'un angle de rotation aleatoir
+  lt random 90 rt random 90                 ;; Choix d'un angle de rotation aléatoire
     let x [type-patch] of patch-ahead 1
     ifelse (x = a or x = b or x = c)[       ;; Si l'espace est "a" ou "b" ou "c"
       fd v                                  ;; faire avancer la tortue avec une distance v
     ]
-    [                                       ;; Sinon si l'espace est different de "a" ou "b" ou "c"
+    [                                       ;; Sinon si l'espace est diffèrent de "a" ou "b" ou "c"
       lt 180                                ;; retourner la tortue de 180°
     ]
 end
@@ -372,13 +371,13 @@ end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 @#$#@#$#@
 GRAPHICS-WINDOW
-195
+197
 10
-708
-524
+706
+520
 -1
 -1
-6.235
+6.19
 1
 10
 1
@@ -401,7 +400,7 @@ ticks
 BUTTON
 5
 30
-90
+85
 63
 setup
 setup
@@ -461,10 +460,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-710
-380
-820
-425
+720
+375
+830
+420
 % Inflammation
 int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / count patches with [type-patch = \"membraneSynovial\"]) * 100)
 17
@@ -472,10 +471,10 @@ int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / c
 11
 
 MONITOR
-710
-245
-820
-290
+720
+240
+830
+285
 TNF-a
 count TNF_as
 17
@@ -485,7 +484,7 @@ count TNF_as
 PLOT
 840
 170
-1325
+1330
 520
 Graphique
 time
@@ -505,10 +504,10 @@ PENS
 "IL-6" 1.0 0 -13345367 true "" "plot count IL_6s"
 
 MONITOR
-710
-430
-820
-475
+720
+425
+830
+470
 % Deg. de l'Os 
 int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patches with [type-patch = \"os\"]))) * 100)
 17
@@ -516,9 +515,9 @@ int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patch
 11
 
 MONITOR
-710
+720
 10
-820
+830
 55
 Chemokines
 count chemokines
@@ -527,10 +526,10 @@ count chemokines
 11
 
 MONITOR
-710
-295
-820
-340
+720
+290
+830
+335
 MMPs
 count MMPs
 17
@@ -538,9 +537,9 @@ count MMPs
 11
 
 MONITOR
-710
+720
 110
-820
+830
 155
 RANKLs
 Count RANKLs
@@ -551,7 +550,7 @@ Count RANKLs
 MONITOR
 840
 10
-950
+955
 55
 Osteoclastes
 Count osteoclastes
@@ -560,9 +559,9 @@ Count osteoclastes
 11
 
 MONITOR
-710
+720
 60
-820
+830
 105
 Chondrocytes
 count chondrocytes
@@ -573,7 +572,7 @@ count chondrocytes
 MONITOR
 840
 60
-950
+955
 105
 Fibroblastes
 count fibroblastes
@@ -584,7 +583,7 @@ count fibroblastes
 MONITOR
 840
 110
-950
+955
 155
 Macrophages
 count macrophages
@@ -593,10 +592,10 @@ count macrophages
 11
 
 MONITOR
-710
-480
-820
-525
+720
+475
+830
+520
 % Deg. du Cartilage
 int((1 -((count patches with [type-patch = \"cartilage\"]) / 419)) * 100)
 17
@@ -604,9 +603,9 @@ int((1 -((count patches with [type-patch = \"cartilage\"]) / 419)) * 100)
 11
 
 PLOT
-960
+965
 10
-1320
+1325
 155
 Historique
 NIL
@@ -626,7 +625,7 @@ PENS
 "IL-6" 1.0 0 -14070903 true "" "plot count IL_6s"
 
 BUTTON
-95
+100
 30
 180
 63
@@ -640,7 +639,7 @@ NIL
 NIL
 NIL
 NIL
-1
+0
 
 SLIDER
 5
@@ -703,10 +702,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-710
-195
-820
-240
+720
+190
+830
+235
 IL-6
 count IL_6s
 17
@@ -726,7 +725,7 @@ INITIALISATION
 TEXTBOX
 100
 15
-165
+180
 33
 SIMULATION
 11
@@ -818,7 +817,7 @@ SLIDER
 5
 385
 180
-416
+418
 Dose
 Dose
 0
@@ -838,7 +837,7 @@ Infliximab-Act
 Infliximab-Act
 0
 100
-50.0
+100.0
 1
 1
 NIL
@@ -875,7 +874,7 @@ NIL
 HORIZONTAL
 
 @#$#@#$#@
-# Agents sociaux impliquee dans la **Polyarthrite Rhumatoïde**
+# **Polyarthrite Rhumatoïde**
 
 ## Introduction :
 
@@ -928,6 +927,8 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 
 * **Fibroblaste** : Cellule constituant la **`Membrane Synoviale`**.
 
+# Agents sociaux impliqués dans la **Polyarthrite Rhumatoïde**
+
 ## Representation des différents agents sous Netlogo
 
 <center>
@@ -940,7 +941,7 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 <img src="./img/doc/netlogo-diagram.png">
 </center>
 
-
+# Manuel d’utilisation
 ## Composants de l’interface utilisateur
 
 ### Les Bouttons  :
@@ -950,6 +951,15 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 
 #### Simulation : 
 > Bouton qui permet d'executer la simulation.
+
+#### Infliximab :
+> Bouton qui permet d'injecter du **Infliximab** dans l'espace Synovial.
+
+#### MTX :
+> Bouton qui permet d'injecter du **MTX** dans l'espace Synovial.
+
+#### Tolizumab :
+> Bouton qui permet d'injecter du **Tolizumab** dans l'espace Synovial.
 
 ### Les sliders :
 
