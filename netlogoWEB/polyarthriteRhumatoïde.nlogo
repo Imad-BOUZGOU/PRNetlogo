@@ -1,44 +1,28 @@
+;; Création des différentes famille d'agents qui composent l'environnement
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Création des différentes familles d'agents qui composent l'environnement
-;; Types cellulaires intervenant dans l’inflammation rhumatoïde
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; AGENTS DE L'ESPACE SYNOVIAL
 breed[macrophages macrophage]
+;;cytokines
+breed[TNF_as TNF_a]
+breed[IL_6s IL_6]
+breed[RANKLs RANKL]
+breed[MMPs MMP]
+;;
+breed[chemokines chemokine]
 breed[osteoclastes osteoclaste]
 breed[chondrocytes chondrocyte]
 breed[fibroblastes fibroblaste]
-
-;;Cytokines
-breed[TNF_as TNF_a]
-breed[IL_6s IL_6]
-breed[MMPs MMP]
-breed[RANKLs RANKL]
-breed[chemokines chemokine]
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MÉDICAMENTS
 breed[infliximabs infliximab]
 breed[tolizumabs tolizumab]
 breed[mtxs mtx]
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+patches-own [type-patch]                    ;; Differencier les patches
+chondrocytes-own[etat]                      ;; Etat des Chondrocytes
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Déclaration des variables de chaque agent
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-patches-own [type-patch]                    ;; Variable permettant de différencier les patches
-chondrocytes-own[etat]                      ;; Variable booléenne permettant de décrire l'etat des Chondrocytes  -ACTIF- ou -INACTIF-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Fonction de Deplacement : Elle prend en paramètre quatre variables
-;; a = Espace1
-;; b = Espace2
-;; c = Espace3
-;; v = vitesse
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to move [a b c v]
+to move [a b c v]                           ;; Fonction de Deplacement(Espace1,Espace2,Espace3,vitesse)
   lt random 90 rt random 90                 ;; Choix d'un angle de rotation aléatoire
     let x [type-patch] of patch-ahead 1
     ifelse (x = a or x = b or x = c)[       ;; Si l'espace est "a" ou "b" ou "c"
@@ -48,32 +32,24 @@ to move [a b c v]
       lt 180                                ;; retourner la tortue de 180°
     ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Efface le monde et les valeurs des variables de patches et des variable de tortues
-;; Charger l'image du fond puis initialiser les variables de patches et des variable de tortues aux valeurs initiales par défaut
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to setup
+to setup                                    ;; Efface tout et réinitialise tout aux valeurs initiales par défaut
   ca
   resize-world -40 40 -40 40
   import-pcolors "EspaceSynovial.png"
 
   ;; Definir une forme initiale par défaut pour chaque agent
   set-default-shape macrophages "circle"
+  ;set-default-shape cytokines "cytokine"
+  set-default-shape chemokines "ballpin"
+  set-default-shape RANKLs "dot"
+  set-default-shape MMPs "dot"
   set-default-shape osteoclastes "monster"
   set-default-shape chondrocytes "x"
   set-default-shape fibroblastes "circle"
 
   set-default-shape TNF_as "cytokine"
   set-default-shape IL_6s "cytokine"
-  set-default-shape MMPs "dot"
-  set-default-shape RANKLs "dot"
-  set-default-shape chemokines "ballpin"
 
   set-default-shape infliximabs "pentagon"
   set-default-shape tolizumabs "triangle"
@@ -89,52 +65,43 @@ to setup
   ;; Liquide Synovial
   ask patches with [pcolor = 48][set pcolor 48 set type-patch "liquideSynovial"]
 
-  ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [                   ;; Création des Macrophages dans le Liquide Synovial
+  ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [      ;; Création des Macrophages dans le Liquide Synovial
     sprout-macrophages 1 [
       set color red
-      hatch-TNF_as random 5[                                                               ;; Chaque Macrophage crée un nombre aléatoire [0..5] de TNF_as
+      hatch-TNF_as random 5[                                               ;; Chaque Macrophage crée un nombre aléatoire [0..5] de Cytokines.
         set color grey
       ]
 
-      hatch-MMPs random 5[                                                                 ;; Chaque Macrophage crée un nombre aléatoire [0..5] de MMPs
+      hatch-MMPs random 5[                                               ;; Chaque Macrophage crée un nombre aléatoire [0..5] de Cytokines.
         set color grey
       ]
 
-      hatch-IL_6s random 5[                                                                ;; Chaque Macrophage crée un nombre aléatoire [0..5] de IL_6s.
+      hatch-IL_6s random 5[                                               ;; Chaque Macrophage crée un nombre aléatoire [0..5] de Cytokines.
         set color grey
       ]
     ]
   ]
   ask n-of nb-osteoclaste patches with [type-patch = "os"] [
-    sprout-osteoclastes 1 [                                                                ;; Création des Osteoclastes sur l'Os
+    sprout-osteoclastes 1 [                                                   ;; Création des Osteoclastes sur l'Os
       set color black
     ]
   ]
   ask patches with [type-patch = "cartilage"] [
-    sprout-chondrocytes 1[                                                                ;; Création des Chondrocytes sur le Cartilage
+    sprout-chondrocytes 1[                                                    ;; Création des Chondrocytes sur le Cartilage
       set color white
       set size 0.7
       set etat 1
     ]
   ]
   ask n-of nb-fibroblaste patches with [type-patch = "membraneSynovial"] [
-    sprout-fibroblastes 1[                                                                ;; Création des Fibroblastes sur la Membrane Synoviale
+    sprout-fibroblastes 1[                                                    ;; Création des Fibroblastes sur la Membrane Synoviale
       set color white
     ]
   ]
-  reset-ticks                                                                             ;; Inistalisation de l'horloge
+  reset-ticks                                                                 ;; Inistalisation de l'horloge
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Lancer la simulation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to go
-  ;; Appel à la fonction go_... qui permet de lancer les différents agents
+to go                                       ;; Lancer la simulation
+  ;go_cytokines
   go_TNF-as
   go_IL-6s
   go_macrophages
@@ -143,47 +110,29 @@ to go
   go_rankls
   go_osteoclastes
   go_chemokines
-  if (count infliximabs != 0)[go_infliximabs]                   ;; Si le medicament 'INFLIXIMAB' est present alors appel a sa fonction 'go_infliximabs' qui va le lancer
-  if (count mtxs != 0)[go_mtxs]                                 ;; Si le medicament 'MTX' est present alors appel a sa fonction 'go_mtxs' qui va le lancer
-  if (count tolizumabs != 0)[go_tolizumabs]                     ;; Si le medicament 'TOLIZUMAB' est present alors appel a sa fonction 'go_tolizumabs' qui va le lancer
+  if (count infliximabs != 0)[go_infliximabs]
+  if (count mtxs != 0)[go_mtxs]
+  if (count tolizumabs != 0)[go_tolizumabs]
   tick
   ;if ticks <= 900 [
   ;  export-view (word "./gif/" ticks ".png")
   ;]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Fonction qui permet de faire avancer les MMPs
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to go_mmps
+to go_mmps                                  ;; Faire avancer les MMPs
   ask MMPs[
     move "liquideSynovial" "membraneSynovial" "" 1
-    if any? chondrocytes-on neighbors4 [                   ;; à leurs contacte avec les Chondrocytes, les MMPs réagissent
-      if (ChondrocyteActivation < random 100)[             ;; grâce a un paramètre d’activation, les chondrocytes peuvent s’activer ou non
-        destructCartilage                                  ;; si oui alors appel à la fonction 'destructCartilage'
-        die                                                ;; et elle meurent.
+    if any? chondrocytes-on neighbors4 [
+      if (ChondrocyteActivation < random 100)[
+        destructCartilage
+        die
       ]
     ]
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Fonction qui permet de faire avancer les Chondrocytes
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_chondrocytes
   ask chondrocytes[
-    ifelse (etat = 1)[                                                              ;; Si l'etat des Chondrocytes est a '1:active'
-      if ((any? TNF_as-on neighbors4)or(any? IL_6s-on neighbors4))[                 ;; à la presence de TNF_a, IL_6
+     ifelse (etat = 1)[
+      if ((any? TNF_as-on neighbors4)or(any? IL_6s-on neighbors4))[                 ;; A la presence de Cytokines les Fibroblastes
         if ((count chondrocytes) - (count MMPs) >= 0 )[
           ask one-of chondrocytes-here[
             hatch-MMPs 1[                              ;; Crée une MMP
@@ -208,15 +157,6 @@ to go_chondrocytes
     ]
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to destructCartilage                        ;; Destruction du Cartilage par les MMPs
   ask one-of Chondrocytes [
     if any? MMPs-on neighbors4[             ;; A la presence de MMPs les Fibroblastes
@@ -233,15 +173,6 @@ to destructCartilage                        ;; Destruction du Cartilage par les 
     ]
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_rankls                                ;; Faire avancer les RANKLs
   ask RANKLs [
     move "liquideSynovial" "membraneSynovial" "os" 1
@@ -252,15 +183,6 @@ to go_rankls                                ;; Faire avancer les RANKLs
     ]
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_osteoclastes                          ;; Faire avancer les Osteoclastes
   ask osteoclastes [
     if any? RANKLs-here[
@@ -271,43 +193,16 @@ to go_osteoclastes                          ;; Faire avancer les Osteoclastes
     move "os" "" "" 1
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to destructBone                             ;; Destruction des OS par les Osteoclastes
   ask patch-here[
     set pcolor pcolor - 1
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_chemokines                            ;; Faire avancer les Chemokines
   ask chemokines [
     move "liquideSynovial" "membraneSynovial" "" 1
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_macrophages                           ;; Faire avancer les Macrophages
   ask macrophages[
     move "liquideSynovial" "" "" .1
@@ -336,15 +231,6 @@ to go_macrophages                           ;; Faire avancer les Macrophages
     ]
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_TNF-as
   ask TNF_as[
     move "liquideSynovial" "membraneSynovial" "" 1
@@ -362,15 +248,6 @@ to go_TNF-as
     ]
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_IL-6s
   ask IL_6s[
     move "liquideSynovial" "membraneSynovial" "" 1
@@ -381,15 +258,6 @@ to go_IL-6s
     ]
   ]
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to MembraneSynovialInflammation             ;; Inflammation de la Membrane Synoviale
   ask fibroblastes[
     if ((any? TNF_as-here) or (any? IL_6s-here))[                 ;; A la presence de Cytokines les Fibroblastes
@@ -430,15 +298,9 @@ to MembraneSynovialInflammation             ;; Inflammation de la Membrane Synov
 end
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; PARTIE II : TRAITEMENT                                                                                                                     ;|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TRAITEMENTS                                                                                                                                                      ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to traitement_par_infliximab                ;; TNF_as
   ask n-of Dose patches with [(type-patch = "liquideSynovial")][
     sprout-infliximabs 1[
@@ -492,6 +354,18 @@ to go_mtxs
     ]
   ]
 end
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;to go_cytokines                               ;; faire avancer les Cytokines
+;  ask cytokines[
+;    move "liquideSynovial" "membraneSynovial" "" 1
+;    if (any? fibroblastes-here)[                  ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste : {
+;      if FibroblasteActivation < random 100 [
+;        MembraneSynovialInflammation              ;; Appelle a la fonction de l'inflammation de la Membrane Synoviale
+;      ]
+;    ]
+;  ]
+;end
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 @#$#@#$#@
 GRAPHICS-WINDOW
 197
