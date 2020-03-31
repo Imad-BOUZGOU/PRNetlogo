@@ -1000,7 +1000,7 @@ SLIDER
 Dose-Mtx
 Dose-Mtx
 0
-100
+10
 1.0
 1
 1
@@ -1723,7 +1723,7 @@ traitement_par_mtx</setup>
     <enumeratedValueSet variable="Dose-MTX">
       <value value="1"/>
       <value value="5"/>
-      <value value="10"/>
+      <value value="11"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="MTX-Act">
       <value value="10"/>
@@ -1778,7 +1778,7 @@ traitement_par_tolizumab</setup>
     <enumeratedValueSet variable="Dose-tolizumab">
       <value value="1"/>
       <value value="50"/>
-      <value value="100"/>
+      <value value="102"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Tolizumab-Act">
       <value value="10"/>
@@ -1794,7 +1794,7 @@ traitement_par_Infliximab</setup>
     <metric>count IL_6s</metric>
     <metric>count TNF_as</metric>
     <metric>count MMPs</metric>
-    <metric>count Infliximab</metric>
+    <metric>count Infliximabs</metric>
     <metric>count macrophages</metric>
     <metric>count chemokines</metric>
     <metric>count RANKLs</metric>
@@ -1832,7 +1832,7 @@ traitement_par_Infliximab</setup>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Dose-Infliximab">
       <value value="1"/>
-      <value value="100"/>
+      <value value="99"/>
       <value value="200"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Infliximab-Act">
