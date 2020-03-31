@@ -205,40 +205,38 @@ to go_chondrocytes
         ]
       ]
     ]
-;#######################################################################################################################; A Corrigé
     [
-      if (any? tolizumabs-on neighbors)[
-        if (Tolizumab-Act < random 100)[
-          ask one-of tolizumabs-on neighbors[
-            die
-          ]
-        ]
-      ]
-      if (any? TNF_as-on neighbors)[
-        ask one-of TNF_as-on neighbors[
-            die
-        ]
-      ]
-      if (any? IL_6s-on neighbors)[
-        ask one-of IL_6s-on neighbors[
+      if (any? tolizumabs-here)[
+        ask one-of tolizumabs-here[
             die
         ]
       ]
       if (any? MMPs-here)[
-        die
+        ask one-of MMPs-here[
+          die
+        ]
       ]
-      if (any? chemokines-on neighbors)[
-        ask one-of chemokines-on neighbors[
+      if (any? TNF_as-on neighbors4)[
+        ask (one-of TNF_as-on neighbors4)[
             die
         ]
       ]
-      if (any? RANKLs-on neighbors)[
-        ask one-of RANKLs-on neighbors[
+      if (any? IL_6s-on neighbors4)[
+        ask (one-of IL_6s-on neighbors4)[
+            die
+        ]
+      ]
+      if (any? chemokines-on neighbors4)[
+        ask (one-of chemokines-on neighbors4)[
+            die
+        ]
+      ]
+      if (any? RANKLs-on neighbors4)[
+        ask (one-of RANKLs-on neighbors4)[
             die
         ]
       ]
     ]
-;#######################################################################################################################;
   ]
 end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -615,9 +613,9 @@ HORIZONTAL
 
 MONITOR
 720
-375
+365
 830
-420
+410
 % Inflammation
 int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / count patches with [type-patch = \"membraneSynovial\"]) * 100)
 17
@@ -626,9 +624,9 @@ int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / c
 
 MONITOR
 720
-240
+230
 830
-285
+275
 TNF-a
 count TNF_as
 17
@@ -636,10 +634,10 @@ count TNF_as
 11
 
 PLOT
-965
-155
+845
+180
 1325
-365
+510
 Graphique
 time
 NbAgents
@@ -659,9 +657,9 @@ PENS
 
 MONITOR
 720
-425
+415
 830
-470
+460
 % Deg. de l'Os 
 int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patches with [type-patch = \"os\"]))) * 100)
 17
@@ -670,9 +668,9 @@ int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patch
 
 MONITOR
 720
-10
+20
 830
-55
+65
 Chemokines
 count chemokines
 17
@@ -681,9 +679,9 @@ count chemokines
 
 MONITOR
 720
-290
+280
 830
-335
+325
 MMPs
 count MMPs
 17
@@ -692,9 +690,9 @@ count MMPs
 
 MONITOR
 720
-110
+120
 830
-155
+165
 RANKLs
 Count RANKLs
 17
@@ -703,9 +701,9 @@ Count RANKLs
 
 MONITOR
 840
-10
+20
 955
-55
+65
 Osteoclastes
 Count osteoclastes
 17
@@ -714,9 +712,9 @@ Count osteoclastes
 
 MONITOR
 720
-60
+70
 830
-105
+115
 Chondrocytes
 count chondrocytes
 17
@@ -725,9 +723,9 @@ count chondrocytes
 
 MONITOR
 840
-60
+70
 955
-105
+115
 Fibroblastes
 count fibroblastes
 17
@@ -736,9 +734,9 @@ count fibroblastes
 
 MONITOR
 840
-110
+120
 955
-155
+165
 Macrophages
 count macrophages
 17
@@ -747,9 +745,9 @@ count macrophages
 
 MONITOR
 720
-475
+465
 830
-520
+510
 % Deg. du Cartilage
 int((1 -((count patches with [type-patch = \"cartilage\"]) / 419)) * 100)
 17
@@ -758,9 +756,9 @@ int((1 -((count patches with [type-patch = \"cartilage\"]) / 419)) * 100)
 
 PLOT
 965
-10
+20
 1325
-155
+165
 Historique
 NIL
 NIL
@@ -804,7 +802,7 @@ MacrophageActivation
 MacrophageActivation
 0
 100
-25.0
+50.0
 1
 1
 NIL
@@ -857,9 +855,9 @@ HORIZONTAL
 
 MONITOR
 720
-190
+180
 830
-235
+225
 IL-6
 count IL_6s
 17
@@ -976,8 +974,8 @@ Dose
 Dose
 0
 200
-50.0
-2
+5.0
+1
 1
 NIL
 HORIZONTAL
