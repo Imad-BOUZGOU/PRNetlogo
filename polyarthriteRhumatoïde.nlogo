@@ -92,17 +92,24 @@ to setup
   ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [                   ;; Création des Macrophages dans le Liquide Synovial
     sprout-macrophages 1 [
       set color red
-      hatch-TNF_as random 5[                                                               ;; Chaque Macrophage crée un nombre aléatoire [0..5] de TNF_as
-        set color grey
-      ]
-
-      hatch-MMPs random 5[                                                                 ;; Chaque Macrophage crée un nombre aléatoire [0..5] de MMPs
-        set color grey
-      ]
-
-      hatch-IL_6s random 5[                                                                ;; Chaque Macrophage crée un nombre aléatoire [0..5] de IL_6s.
-        set color grey
-      ]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        let x random 100
+        if (x < 20)[
+          hatch-IL_6s 1 [                     ;; Création des IL-6 par les Macrophages
+            set color blue
+          ]
+        ]
+        if (x >= 20 and x < 40)[
+          hatch-MMPs 1[                       ;; Création des MMP par les Macrophages
+            set color green
+          ]
+        ]
+        if (x >= 40)[
+          hatch-TNF_as 1 [                    ;; Création des TNF-a par les Macrophages
+            set color blue
+          ]
+        ]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ]
   ]
   ask n-of nb-osteoclaste patches with [type-patch = "os"] [
@@ -184,28 +191,54 @@ to go_chondrocytes
   ask chondrocytes[
     ifelse (etat = 1)[                                                              ;; Si l'etat des Chondrocytes est a '1:active'
       if ((any? TNF_as-on neighbors4)or(any? IL_6s-on neighbors4))[                 ;; à la presence de TNF_a, IL_6
-        if ((count chondrocytes) - (count MMPs) >= 0 )[
-          ask one-of chondrocytes-here[
-            hatch-MMPs 1[                              ;; Crée une MMP
-              set color green
-            ]
+        ask one-of chondrocytes-here[
+          hatch-MMPs 1[                              ;; Crée une MMP
+            set color green
           ]
         ]
         if (any? tolizumabs-here)[
-          if (random 100 < Tolizumab-Act)[
+          if (Tolizumab-Act < random 100)[
             ask tolizumabs-here [
               die
             ]
           ]
         ]
       ]
-    ][
-      if ((any? tolizumabs-on neighbors)or(any? TNF_as-on neighbors)or(any? IL_6s-on neighbors)or(any? MMPs-on neighbors)or(any? chemokines-on neighbors)or(any? RANKLs-on neighbors))[
-        if (random 100 < Tolizumab-Act)[
-          ask other turtles-here [die]
+    ]
+;#######################################################################################################################; A Corrigé
+    [
+      if (any? tolizumabs-on neighbors)[
+        if (Tolizumab-Act < random 100)[
+          ask one-of tolizumabs-on neighbors[
+            die
+          ]
+        ]
+      ]
+      if (any? TNF_as-on neighbors)[
+        ask one-of TNF_as-on neighbors[
+            die
+        ]
+      ]
+      if (any? IL_6s-on neighbors)[
+        ask one-of IL_6s-on neighbors[
+            die
+        ]
+      ]
+      if (any? MMPs-here)[
+        die
+      ]
+      if (any? chemokines-on neighbors)[
+        ask one-of chemokines-on neighbors[
+            die
+        ]
+      ]
+      if (any? RANKLs-on neighbors)[
+        ask one-of RANKLs-on neighbors[
+            die
         ]
       ]
     ]
+;#######################################################################################################################;
   ]
 end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -215,20 +248,22 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to destructCartilage                        ;; Destruction du Cartilage par les MMPs
   ask one-of Chondrocytes [
     if any? MMPs-on neighbors4[             ;; A la presence de MMPs les Fibroblastes
-      if (etat = 1)[
+      ifelse (etat = 1)[
         ifelse ((pcolor < 107) and (pcolor >= 105)) [
-          set pcolor pcolor + 3             ;; detruction du cartilage
+          set pcolor pcolor + 1             ;; detruction du cartilage
         ]
         [
           set pcolor 48
           set type-patch "liquideSynovial"
           die
         ]
+      ][
+        ask MMPs-on neighbors4 [die]
       ]
     ]
   ]
@@ -240,7 +275,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_rankls                                ;; Faire avancer les RANKLs
   ask RANKLs [
@@ -259,7 +294,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_osteoclastes                          ;; Faire avancer les Osteoclastes
   ask osteoclastes [
@@ -278,7 +313,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to destructBone                             ;; Destruction des OS par les Osteoclastes
   ask patch-here[
@@ -292,7 +327,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_chemokines                            ;; Faire avancer les Chemokines
   ask chemokines [
@@ -306,7 +341,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_macrophages                           ;; Faire avancer les Macrophages
   ask macrophages[
@@ -317,7 +352,7 @@ to go_macrophages                           ;; Faire avancer les Macrophages
         let x random 100
         if (x < 20)[
           hatch-IL_6s 1 [                     ;; Création des IL-6 par les Macrophages
-            set color gray
+            set color blue
           ]
         ]
         if (x >= 20 and x < 40)[
@@ -343,7 +378,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_TNF-as
   ask TNF_as[
@@ -354,7 +389,7 @@ to go_TNF-as
       ]
     ]
     if any? infliximabs-here[
-      if (random 100 < Infliximab-Act)[
+      if (Infliximab-Act < random 100)[
         ask infliximabs-here[
           die
         ]
@@ -369,7 +404,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_IL-6s
   ask IL_6s[
@@ -388,22 +423,18 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                                                                                                     ;|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to MembraneSynovialInflammation             ;; Inflammation de la Membrane Synoviale
   ask fibroblastes[
     if ((any? TNF_as-here) or (any? IL_6s-here))[                 ;; A la presence de Cytokines les Fibroblastes
       set pcolor red
-      if (((count patches with [(pcolor > 5) and (type-patch = "os")]) - (count RANKLs) >= 0 )and(random 100 < 50))[
         hatch-RANKLs 1[                        ;; Création des RANKLs
           set color 126
         ]
-      ]
-      if ((count macrophages > 0 )and(random 100 < 50))[
         hatch-chemokines 1[                      ;; Création des Chémokines
           set color 35
         ]
-      ]
       set color red                            ;; Changer la couleur de la Fibroblaste en Rouge
       ask TNF_as-here [die]
       ask IL_6s-here [die]
@@ -437,7 +468,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; PARTIE II : TRAITEMENT                                                                                                                     ;|
+;; PARTIE II : TRAITEMENTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to traitement_par_infliximab                ;; TNF_as
   ask n-of Dose patches with [(type-patch = "liquideSynovial")][
@@ -546,7 +577,7 @@ nb-macrophage
 nb-macrophage
 0
 100
-10.0
+15.0
 1
 1
 NIL
@@ -561,7 +592,7 @@ nb-osteoclaste
 nb-osteoclaste
 0
 100
-13.0
+40.0
 1
 1
 NIL
@@ -605,10 +636,10 @@ count TNF_as
 11
 
 PLOT
-840
-170
-1330
-520
+965
+155
+1325
+365
 Graphique
 time
 NbAgents
@@ -773,7 +804,7 @@ MacrophageActivation
 MacrophageActivation
 0
 100
-84.0
+50.0
 1
 1
 NIL
@@ -788,7 +819,7 @@ FibroblasteActivation
 FibroblasteActivation
 0
 100
-82.0
+0.0
 1
 1
 NIL
@@ -945,7 +976,7 @@ Dose
 Dose
 0
 200
-38.0
+50.0
 2
 1
 NIL
@@ -1596,6 +1627,27 @@ NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="Experiment 1" repetitions="100" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="10000"/>
+    <metric>count turtles</metric>
+    <steppedValueSet variable="MacrophageActivation" first="25" step="25" last="100"/>
+    <steppedValueSet variable="FibroblasteActivation" first="25" step="25" last="100"/>
+    <steppedValueSet variable="OsteoclasteActivation" first="25" step="25" last="100"/>
+    <steppedValueSet variable="ChondrocyteActivation" first="25" step="25" last="100"/>
+    <enumeratedValueSet variable="nb-fibroblaste">
+      <value value="668"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-macrophage">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-osteoclaste">
+      <value value="15"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
