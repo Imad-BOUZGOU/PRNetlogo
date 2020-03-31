@@ -469,7 +469,7 @@ end
 ;; PARTIE II : TRAITEMENTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to traitement_par_infliximab                ;; TNF_as
-  ask n-of Dose patches with [(type-patch = "liquideSynovial")][
+  ask n-of Dose-Infliximab patches with [(type-patch = "liquideSynovial")][
     sprout-infliximabs 1[
       set color green
     ]
@@ -486,7 +486,7 @@ to go_infliximabs
   ]
 end
 to traitement_par_tolizumab                 ;; Chondrocytes
-  ask n-of Dose patches with [(type-patch = "liquideSynovial")][
+  ask n-of Dose-tolizumab patches with [(type-patch = "liquideSynovial")][
     sprout-tolizumabs 1[
       set color green
     ]
@@ -505,7 +505,7 @@ to go_tolizumabs
   ]
 end
 to traitement_par_mtx                       ;; Macrophages
-  ask n-of Dose patches with [(type-patch = "liquideSynovial")][
+  ask n-of Dose-mtx patches with [(type-patch = "liquideSynovial")][
     sprout-mtxs 1[
       set color green
     ]
@@ -550,10 +550,10 @@ ticks
 30.0
 
 BUTTON
-5
-30
-85
-63
+10
+435
+90
+468
 setup
 setup
 NIL
@@ -568,9 +568,9 @@ NIL
 
 SLIDER
 5
-85
+60
 180
-118
+93
 nb-macrophage
 nb-macrophage
 0
@@ -583,9 +583,9 @@ HORIZONTAL
 
 SLIDER
 5
-120
+100
 180
-153
+133
 nb-osteoclaste
 nb-osteoclaste
 0
@@ -598,9 +598,9 @@ HORIZONTAL
 
 SLIDER
 5
-155
+140
 180
-188
+173
 nb-fibroblaste
 nb-fibroblaste
 0
@@ -613,9 +613,9 @@ HORIZONTAL
 
 MONITOR
 720
-365
-830
-410
+200
+880
+245
 % Inflammation
 int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / count patches with [type-patch = \"membraneSynovial\"]) * 100)
 17
@@ -623,10 +623,10 @@ int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / c
 11
 
 MONITOR
-720
-230
-830
-275
+1130
+135
+1225
+180
 TNF-a
 count TNF_as
 17
@@ -634,10 +634,10 @@ count TNF_as
 11
 
 PLOT
-845
-180
+885
+200
 1325
-510
+520
 Graphique
 time
 NbAgents
@@ -657,9 +657,9 @@ PENS
 
 MONITOR
 720
-415
-830
-460
+250
+880
+295
 % Deg. de l'Os 
 int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patches with [type-patch = \"os\"]))) * 100)
 17
@@ -668,9 +668,9 @@ int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patch
 
 MONITOR
 720
-20
-830
-65
+135
+815
+180
 Chemokines
 count chemokines
 17
@@ -678,10 +678,10 @@ count chemokines
 11
 
 MONITOR
-720
-280
-830
-325
+1230
+135
+1325
+180
 MMPs
 count MMPs
 17
@@ -689,10 +689,10 @@ count MMPs
 11
 
 MONITOR
-720
-120
-830
-165
+920
+135
+1015
+180
 RANKLs
 Count RANKLs
 17
@@ -700,21 +700,10 @@ Count RANKLs
 11
 
 MONITOR
-840
-20
-955
-65
-Osteoclastes
-Count osteoclastes
-17
-1
-11
-
-MONITOR
-720
-70
-830
-115
+820
+135
+915
+180
 Chondrocytes
 count chondrocytes
 17
@@ -722,32 +711,10 @@ count chondrocytes
 11
 
 MONITOR
-840
-70
-955
-115
-Fibroblastes
-count fibroblastes
-17
-1
-11
-
-MONITOR
-840
-120
-955
-165
-Macrophages
-count macrophages
-17
-1
-11
-
-MONITOR
 720
-465
-830
-510
+300
+880
+345
 % Deg. du Cartilage
 int((1 -((count patches with [type-patch = \"cartilage\"]) / 419)) * 100)
 17
@@ -755,10 +722,10 @@ int((1 -((count patches with [type-patch = \"cartilage\"]) / 419)) * 100)
 11
 
 PLOT
-965
-20
-1325
-165
+720
+365
+880
+520
 Historique
 NIL
 NIL
@@ -777,10 +744,10 @@ PENS
 "IL-6" 1.0 0 -14070903 true "" "plot count IL_6s"
 
 BUTTON
-100
-30
+110
+435
 180
-63
+468
 go
 go
 T
@@ -795,14 +762,14 @@ NIL
 
 SLIDER
 5
-225
+235
 180
-258
+268
 MacrophageActivation
 MacrophageActivation
 0
 100
-50.0
+10.0
 1
 1
 NIL
@@ -810,14 +777,14 @@ HORIZONTAL
 
 SLIDER
 5
-260
+275
 180
-293
+308
 FibroblasteActivation
 FibroblasteActivation
 0
 100
-50.0
+10.0
 1
 1
 NIL
@@ -825,14 +792,14 @@ HORIZONTAL
 
 SLIDER
 5
-295
+315
 180
-328
+348
 ChondrocyteActivation
 ChondrocyteActivation
 0
 100
-50.0
+100.0
 1
 1
 NIL
@@ -840,24 +807,24 @@ HORIZONTAL
 
 SLIDER
 5
-330
+355
 180
-363
+388
 OsteoclasteActivation
 OsteoclasteActivation
 0
 100
-50.0
+45.0
 1
 1
 NIL
 HORIZONTAL
 
 MONITOR
-720
+1030
+135
+1125
 180
-830
-225
 IL-6
 count IL_6s
 17
@@ -865,20 +832,20 @@ count IL_6s
 11
 
 TEXTBOX
-5
-15
-85
-33
+10
+420
+90
+438
 INITIALISATION
 11
 0.0
 1
 
 TEXTBOX
-100
-15
+115
+420
 180
-33
+438
 SIMULATION
 11
 0.0
@@ -886,9 +853,9 @@ SIMULATION
 
 TEXTBOX
 5
-70
+40
 195
-88
+58
 PARAMÈTRAGE DE L'ENVIRONNEMENT
 11
 0.0
@@ -896,29 +863,29 @@ PARAMÈTRAGE DE L'ENVIRONNEMENT
 
 TEXTBOX
 10
-195
+200
 175
-221
+226
 PARAMÈTRES D'ACTIVATION DES AGENTS\n
 11
 0.0
 1
 
 TEXTBOX
+715
 10
-370
-160
-388
+865
+28
 INJECTION DE MÉDICAMENT
 11
 0.0
 1
 
 BUTTON
-120
-420
-180
-453
+835
+30
+890
+100
 Infliximab
 traitement_par_infliximab
 NIL
@@ -932,10 +899,10 @@ NIL
 0
 
 BUTTON
-120
-455
-180
-488
+1060
+30
+1115
+100
 MTX
 traitement_par_mtx
 NIL
@@ -949,10 +916,10 @@ NIL
 0
 
 BUTTON
-120
-490
-180
-523
+1270
+30
+1325
+100
 Tolizumab
 traitement_par_tolizumab
 NIL
@@ -966,55 +933,55 @@ NIL
 0
 
 SLIDER
-5
-385
-180
-418
-Dose
-Dose
+715
+30
+830
+63
+Dose-Infliximab
+Dose-Infliximab
 0
 200
-5.0
+10.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-5
-420
-115
-453
+715
+65
+830
+98
 Infliximab-Act
 Infliximab-Act
 0
 100
-100.0
+99.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-5
-455
-115
-488
+940
+65
+1055
+98
 MTX-Act
 MTX-Act
 0
 100
-100.0
+10.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-5
-490
-115
-523
+1150
+65
+1265
+98
 Tolizumab-Act
 Tolizumab-Act
 0
@@ -1024,6 +991,46 @@ Tolizumab-Act
 1
 NIL
 HORIZONTAL
+
+SLIDER
+940
+30
+1055
+63
+Dose-Mtx
+Dose-Mtx
+0
+100
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1150
+30
+1265
+63
+Dose-Tolizumab
+Dose-Tolizumab
+0
+100
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+720
+115
+870
+133
+INFORMATIONS
+11
+0.0
+1
 
 @#$#@#$#@
 # **Polyarthrite Rhumatoïde**
@@ -1626,26 +1633,7 @@ NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="Experiment 1" repetitions="100" runMetricsEveryStep="true">
-    <setup>setup</setup>
-    <go>go</go>
-    <timeLimit steps="10000"/>
-    <metric>count turtles</metric>
-    <steppedValueSet variable="MacrophageActivation" first="25" step="25" last="100"/>
-    <steppedValueSet variable="FibroblasteActivation" first="25" step="25" last="100"/>
-    <steppedValueSet variable="OsteoclasteActivation" first="25" step="25" last="100"/>
-    <steppedValueSet variable="ChondrocyteActivation" first="25" step="25" last="100"/>
-    <enumeratedValueSet variable="nb-fibroblaste">
-      <value value="668"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="nb-macrophage">
-      <value value="15"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="nb-osteoclaste">
-      <value value="15"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="TEST" repetitions="5" runMetricsEveryStep="true">
+  <experiment name="Simulation_Sans_Medicaments_diff_val_act(mac-fibr-chon-osteo)" repetitions="5" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
     <timeLimit steps="1000"/>
@@ -1655,7 +1643,6 @@ NetLogo 6.1.1
     <metric>count chemokines</metric>
     <metric>count chondrocytes</metric>
     <metric>count RANKLs</metric>
-    <metric>Count osteoclastes</metric>
     <metric>(count patches with [type-patch = "membraneSynovial" and pcolor = red] / count patches with [type-patch = "membraneSynovial"]) * 100</metric>
     <metric>(1 - ((count patches with [pcolor &gt; 5 and type-patch = "os"])/(count patches with [type-patch = "os"]))) * 100</metric>
     <metric>(1 -((count patches with [type-patch = "cartilage"]) / 419)) * 100</metric>
@@ -1687,6 +1674,171 @@ NetLogo 6.1.1
     </enumeratedValueSet>
     <enumeratedValueSet variable="nb-osteoclaste">
       <value value="40"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="traitement_PR_MTX" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+traitement_par_mtx</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>count IL_6s</metric>
+    <metric>count TNF_as</metric>
+    <metric>count MMPs</metric>
+    <metric>count MTXs</metric>
+    <metric>count macrophages</metric>
+    <metric>count chemokines</metric>
+    <metric>count RANKLs</metric>
+    <metric>(count patches with [type-patch = "membraneSynovial" and pcolor = red] / count patches with [type-patch = "membraneSynovial"]) * 100</metric>
+    <metric>(1 - ((count patches with [pcolor &gt; 5 and type-patch = "os"])/(count patches with [type-patch = "os"]))) * 100</metric>
+    <metric>(1 -((count patches with [type-patch = "cartilage"]) / 419)) * 100</metric>
+    <enumeratedValueSet variable="MacrophageActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="FibroblasteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="OsteoclasteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ChondrocyteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-fibroblaste">
+      <value value="668"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-macrophage">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-osteoclaste">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Dose-MTX">
+      <value value="1"/>
+      <value value="5"/>
+      <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="MTX-Act">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="traitement_PR_tolizumab" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+traitement_par_tolizumab</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>count IL_6s</metric>
+    <metric>count TNF_as</metric>
+    <metric>count MMPs</metric>
+    <metric>count tolizumabs</metric>
+    <metric>count macrophages</metric>
+    <metric>count chemokines</metric>
+    <metric>count RANKLs</metric>
+    <metric>(count patches with [type-patch = "membraneSynovial" and pcolor = red] / count patches with [type-patch = "membraneSynovial"]) * 100</metric>
+    <metric>(1 - ((count patches with [pcolor &gt; 5 and type-patch = "os"])/(count patches with [type-patch = "os"]))) * 100</metric>
+    <metric>(1 -((count patches with [type-patch = "cartilage"]) / 419)) * 100</metric>
+    <enumeratedValueSet variable="MacrophageActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="FibroblasteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="OsteoclasteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ChondrocyteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-fibroblaste">
+      <value value="668"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-macrophage">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-osteoclaste">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Dose-tolizumab">
+      <value value="1"/>
+      <value value="50"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tolizumab-Act">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="traitement_PR_Infliximab" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+traitement_par_Infliximab</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>count IL_6s</metric>
+    <metric>count TNF_as</metric>
+    <metric>count MMPs</metric>
+    <metric>count Infliximab</metric>
+    <metric>count macrophages</metric>
+    <metric>count chemokines</metric>
+    <metric>count RANKLs</metric>
+    <metric>(count patches with [type-patch = "membraneSynovial" and pcolor = red] / count patches with [type-patch = "membraneSynovial"]) * 100</metric>
+    <metric>(1 - ((count patches with [pcolor &gt; 5 and type-patch = "os"])/(count patches with [type-patch = "os"]))) * 100</metric>
+    <metric>(1 -((count patches with [type-patch = "cartilage"]) / 419)) * 100</metric>
+    <enumeratedValueSet variable="MacrophageActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="FibroblasteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="OsteoclasteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ChondrocyteActivation">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-fibroblaste">
+      <value value="668"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-macrophage">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-osteoclaste">
+      <value value="40"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Dose-Infliximab">
+      <value value="1"/>
+      <value value="100"/>
+      <value value="200"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Infliximab-Act">
+      <value value="10"/>
+      <value value="45"/>
+      <value value="100"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
