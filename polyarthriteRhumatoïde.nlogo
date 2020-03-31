@@ -799,7 +799,7 @@ ChondrocyteActivation
 ChondrocyteActivation
 0
 100
-100.0
+10.0
 1
 1
 NIL
@@ -814,7 +814,7 @@ OsteoclasteActivation
 OsteoclasteActivation
 0
 100
-45.0
+10.0
 1
 1
 NIL
@@ -986,7 +986,7 @@ Tolizumab-Act
 Tolizumab-Act
 0
 100
-100.0
+10.0
 1
 1
 NIL
@@ -1016,7 +1016,7 @@ Dose-Tolizumab
 Dose-Tolizumab
 0
 100
-0.0
+1.0
 1
 1
 NIL
@@ -1722,13 +1722,13 @@ traitement_par_mtx</setup>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Dose-MTX">
       <value value="1"/>
-      <value value="5"/>
-      <value value="11"/>
+      <value value="4"/>
+      <value value="10"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="MTX-Act">
       <value value="10"/>
       <value value="45"/>
-      <value value="100"/>
+      <value value="101"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="traitement_PR_tolizumab" repetitions="1" runMetricsEveryStep="true">
@@ -1777,8 +1777,8 @@ traitement_par_tolizumab</setup>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Dose-tolizumab">
       <value value="1"/>
-      <value value="50"/>
-      <value value="102"/>
+      <value value="49"/>
+      <value value="100"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="Tolizumab-Act">
       <value value="10"/>
