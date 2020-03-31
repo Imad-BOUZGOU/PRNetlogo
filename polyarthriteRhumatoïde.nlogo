@@ -804,7 +804,7 @@ MacrophageActivation
 MacrophageActivation
 0
 100
-50.0
+25.0
 1
 1
 NIL
@@ -819,7 +819,7 @@ FibroblasteActivation
 FibroblasteActivation
 0
 100
-0.0
+50.0
 1
 1
 NIL
@@ -1645,6 +1645,50 @@ NetLogo 6.1.1
     </enumeratedValueSet>
     <enumeratedValueSet variable="nb-osteoclaste">
       <value value="15"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="TEST" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="1000"/>
+    <metric>count IL_6s</metric>
+    <metric>count TNF_as</metric>
+    <metric>count MMPs</metric>
+    <metric>count chemokines</metric>
+    <metric>count chondrocytes</metric>
+    <metric>count RANKLs</metric>
+    <metric>Count osteoclastes</metric>
+    <metric>(count patches with [type-patch = "membraneSynovial" and pcolor = red] / count patches with [type-patch = "membraneSynovial"]) * 100</metric>
+    <metric>(1 - ((count patches with [pcolor &gt; 5 and type-patch = "os"])/(count patches with [type-patch = "os"]))) * 100</metric>
+    <metric>(1 -((count patches with [type-patch = "cartilage"]) / 419)) * 100</metric>
+    <enumeratedValueSet variable="MacrophageActivation">
+      <value value="25"/>
+      <value value="25"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="FibroblasteActivation">
+      <value value="25"/>
+      <value value="25"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="OsteoclasteActivation">
+      <value value="25"/>
+      <value value="25"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ChondrocyteActivation">
+      <value value="25"/>
+      <value value="25"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-fibroblaste">
+      <value value="668"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-macrophage">
+      <value value="15"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nb-osteoclaste">
+      <value value="40"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
