@@ -92,7 +92,6 @@ to setup
   ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [                   ;; Création des Macrophages dans le Liquide Synovial
     sprout-macrophages 1 [
       set color red
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         let x random 100
         if (x < 20)[
           hatch-IL_6s 1 [                     ;; Création des IL-6 par les Macrophages
@@ -109,7 +108,6 @@ to setup
             set color blue
           ]
         ]
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ]
   ]
   ask n-of nb-osteoclaste patches with [type-patch = "os"] [
@@ -119,7 +117,7 @@ to setup
   ]
   ask patches with [type-patch = "cartilage"] [
     sprout-chondrocytes 1[                                                                ;; Création des Chondrocytes sur le Cartilage
-      set color white
+      set color blue
       set size 0.7
       set etat 1
     ]
@@ -253,6 +251,7 @@ to destructCartilage                        ;; Destruction du Cartilage par les 
     if any? MMPs-on neighbors4[             ;; A la presence de MMPs les Fibroblastes
       ifelse (etat = 1)[
         ifelse ((pcolor < 107) and (pcolor >= 105)) [
+          set color color + 1
           set pcolor pcolor + 1             ;; detruction du cartilage
         ]
         [
@@ -346,7 +345,6 @@ to go_macrophages                           ;; Faire avancer les Macrophages
     move "liquideSynovial" "" "" .1
     if any? Chemokines-here [
       if MacrophageActivation < random 100[
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         let x random 100
         if (x < 20)[
           hatch-IL_6s 1 [                     ;; Création des IL-6 par les Macrophages
@@ -363,7 +361,6 @@ to go_macrophages                           ;; Faire avancer les Macrophages
             set color blue
           ]
         ]
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         ask chemokines-here [die]
       ]
     ]
@@ -941,7 +938,7 @@ Dose-Infliximab
 Dose-Infliximab
 0
 200
-10.0
+50.0
 1
 1
 NIL
@@ -971,7 +968,7 @@ MTX-Act
 MTX-Act
 0
 100
-10.0
+100.0
 1
 1
 NIL
@@ -986,7 +983,7 @@ Tolizumab-Act
 Tolizumab-Act
 0
 100
-10.0
+100.0
 1
 1
 NIL
@@ -1001,7 +998,7 @@ Dose-Mtx
 Dose-Mtx
 0
 10
-1.0
+3.0
 1
 1
 NIL
@@ -1016,7 +1013,7 @@ Dose-Tolizumab
 Dose-Tolizumab
 0
 100
-1.0
+100.0
 1
 1
 NIL
@@ -1105,20 +1102,20 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 
 ### Les Bouttons  :
 
-#### Créer Univers : 
+#### setup : 
 > Bouton pour charger l'environement (patches et tortues).
 
-#### Simulation : 
+#### go : 
 > Bouton qui permet d'executer la simulation.
 
 #### Infliximab :
-> Bouton qui permet d'injecter du **Infliximab** dans l'espace Synovial.
+> Bouton qui permet d'injecter du **Infliximab** dans l'Espace Synovial en prenant en compte sa dose et son niveau d'activation.
 
 #### MTX :
-> Bouton qui permet d'injecter du **MTX** dans l'espace Synovial.
+> Bouton qui permet d'injecter du **MTX** dans l'espace Synovial en prenant en compte sa dose et son niveau d'activation..
 
 #### Tolizumab :
-> Bouton qui permet d'injecter du **Tolizumab** dans l'espace Synovial.
+> Bouton qui permet d'injecter du **Tolizumab** dans l'espace Synovial en prenant en compte sa dose et son niveau d'activation..
 
 ### Les sliders :
 
@@ -1147,21 +1144,41 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 #### ChondrocyteActivation
 > Permet de contrôler l’efficacité des Chondrocytes, plus la valeur est très grande (> 50) cela permettra aux Chondrocytes d’avoir une meilleure résistance face aux MMPs.
 
+#### Infliximab-Act
+> Permet de contrôler l’efficacité du médicament **Infliximab** par rapport au **TNF_a**.
+
+#### Dose-Infliximab
+> Permet de contrôler la dose de **Infliximab** a injecté au patient.
+
+
+#### MTX-Act
+> Permet de contrôler l’efficacité du médicament **MTX** par rapport au **Macrophages**.
+
+#### Dose-Mtx
+> Permet de contrôler la dose de **MTX** a injecté au patient.
+
+
+#### Tolizumab-Act
+> Permet de contrôler l’efficacité du médicament **Tolizumab** par rapport au **Cytokines**
+
+#### Dose-Tolizumab
+> Permet de contrôler la dose de **Tolizumab** a injecté au patient.
+
 
 ### Les champs d'informations :
 
-#### Inflammation :
+#### IL-6 :
 
->permet d'afficher le pourcentage de cellules Fibroblast Infectées.
+>permet d'afficher le nombre de IL-6s.
 ```
-count patches with [pcolor = red]
+count IL-6s
 ```
 
-#### Cytokines :
+#### TNF-a :
 
->permet d'afficher le nombre de cytokines.
+>permet d'afficher le nombre de TNF-as.
 ```
-count cytokines
+count TNF-as
 ```
 
 #### MMPs :
@@ -1185,29 +1202,28 @@ count chemokines
 count RANKLs
 ```
 
-#### Osteoclastes :
+#### Chondrocytes :
 
->permet d'afficher le nombre de Osteoclastes.
+>permet d'afficher le nombre de Chondrocytes.
 ```
-Count osteoclastes
-```
-
-#### %Deg. de l'os :
-
->permet d'afficher le % de degradation de l'os.
-```
-int((1-((count patches with [(pcolor > 5)and(type-patch = "os")]) /
-(count patches with [type-patch="os"])))* 100)
+Count Chondrocytes
 ```
 
 #### %Inflammation :
 
 >permet d'afficher le % d'inflammation de la Membrane Synoviale.
 ```
-int((count patches with [(type-patch="membraneSynovial") and (pcolor = red)] / 
+int((count patches with [type-patch="membraneSynovial" and pcolor=red] /
 count patches with [type-patch="membraneSynovial"])*100)
 ```
 
+#### %Deg. de l'os :
+
+>permet d'afficher le % de degradation de l'os.
+```
+int((1-((count patches with [pcolor>5 and type-patch="os"]) /
+(count patches with [type-patch="os"])))*100)
+```
 
 #### %Deg. du Cartilage :
 
@@ -1221,35 +1237,24 @@ int((1 -((count patches with [type-patch = "cartilage"]) / 419)) * 100)
 
 **1**. Régler le nombre de chacune d'agents à créer (**Fibroblastes**, **Macrophages**, **Ostéoclastes**).
 <center>
-<img src="./img/info/nb-fibroblaste.png">
-<img src="./img/info/nb-macrophage.png">
-<img src="./img/info/nb-osteoclaste.png">
+<img src="./img/info/parametrageEnvironnement.png">
 </center>
 
-**2**. Définir le niveau d'efficacité de chaque agent par rapport aux autres agents (**Macrophage-Chémokine**, **Fibroblaste-Cytokine**, **Ostéoclaste-RANKL**, **Chondrocyte-MMP**).
+**2**. Définir le niveau d'efficacité de chaque agent par rapport aux autres agents (**Macrophage**, **Fibroblaste**, **Ostéoclaste**, **Chondrocyte**).
 
 <center>
-<img src="./img/info/controleActivation1.png">
-<img src="./img/info/controleActivation2.png">
+<img src="./img/info/controleActivation.png">
 </center>
 
-**3**. Créer le monde de la simulation grâce au bouton **Créer Univers**.
-<img src="./img/info/creerUnivers.png">
-
-**4**. Lancer la simulation avec le bouton **Simulation**.
-<img src="./img/info/simulation.png">
-
-
-**5**. Observer les résultats de l’exécution sur le diagramme et les champs d’informations qui renseignent le nombre d’**instance restantes**, **niveau de dégradation de l’os**, **niveau d’inflammation** …
+**3**. Créer le monde de la simulation grâce au bouton **setup**.
+**4**. Lancer la simulation avec le bouton **go**.
 <center>
-<img src="./img/info/infoAgents.png">
+<img src="./img/info/boutonsPrincipaux.png">
 </center>
+
+**5**. Observer les résultats de l’exécution sur le "**Graphique**" et "**Historique**", et les champs d’informations qui renseignent **niveau de dégradation de l’os**, **niveau d’inflammation**, **niveau de dégradation du Cartilage** et le nombre d’**instance restantes** de chaque entité **Chemokines**, **RANKLs**, **IL-6** ...
 <center>
-<img src="./img/info/inflammation.png">
-<img src="./img/info/degOS.png">
-</center>
-<center>
-<img src="./img/info/graphique.png">
+<img src="./img/info/champsInformation.png">
 </center>
 
 **6**. Durant toute la période de la simulation, il est possible de régler la vitesse du modèle.
@@ -1258,8 +1263,20 @@ Plus à **gauche** « `vitesse faible` », au **centre** « `vitesse normale` »
 <img src="./img/info/vitesse.png">
 </center>
 
+
+
+**7**. Le modèle permet aussi, au cours de la simulation, de voir l'effet des medicaments comme "**Infliximab**", "**MTX**", "**Tolizumab**" sur la Polyarthrite Rhumatoïde, pour cela il faudrait juste ajuster la dose et l’efficacité de d’un médicament puis cliquer sur le bouton qui porte son nom pour faire une injection.
+<center>
+<img src="./img/info/injectionMedicaments.png">
+</center>
+
+
 ## Auteurs:
-Dans le cadre de la réalisation d'une simulation de la **Polyarthrite Rhumatoïde** pour le TER du Master 1...
+Pour le TER du Master 1, nous avons d’étudier la faisabilité d’une modélisation multi-agents des processus dans l’espace synovial d’une articulation atteinte de la polyarthrite rheumatoïde, 
+
+
+nous avons reussis a obtenir un modele qui permet de faciliter l'étude de la polyarthrite rheumatoïde par les specialiste du domaine et aussi qui peut servir d'illustration animée pour le grand public.
+
 
 ### Ce travail a été réalisé par :
 <center>
@@ -1270,10 +1287,14 @@ Dans le cadre de la réalisation d'une simulation de la **Polyarthrite Rhumatoï
 
 ### Encadré par :
 <center>
-	<b>Sergui Ivanov</b>
+	<b>Mr Sergiu Ivanov</b>
 </center>
 
-...
+### En collaboration avec:
+<center>
+	<b>Mme Anna Niarakis</b>
+</center>
+
 
 [1]: https://disease-maps.org/rheumatoidarthritis        "disease-maps.org"
 [2]: http://www.rhumatologie.asso.fr/04-Rhumatismes/stop-rhumatismes/pdf-upload/Pro_polyarthrite_rhumatoide_7.pdf					 "rhumatologie.asso.fr"
