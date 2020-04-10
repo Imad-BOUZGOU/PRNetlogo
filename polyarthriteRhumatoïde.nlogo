@@ -566,7 +566,7 @@ NIL
 SLIDER
 5
 60
-180
+185
 93
 nb-macrophage
 nb-macrophage
@@ -581,7 +581,7 @@ HORIZONTAL
 SLIDER
 5
 100
-180
+185
 133
 nb-osteoclaste
 nb-osteoclaste
@@ -596,7 +596,7 @@ HORIZONTAL
 SLIDER
 5
 140
-180
+185
 173
 nb-fibroblaste
 nb-fibroblaste
@@ -609,9 +609,9 @@ NIL
 HORIZONTAL
 
 MONITOR
-720
+715
 200
-880
+875
 245
 % Inflammation
 int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / count patches with [type-patch = \"membraneSynovial\"]) * 100)
@@ -620,9 +620,9 @@ int((count patches with [type-patch = \"membraneSynovial\" and pcolor = red] / c
 11
 
 MONITOR
-1130
+1125
 135
-1225
+1220
 180
 TNF-a
 count TNF_as
@@ -631,9 +631,9 @@ count TNF_as
 11
 
 PLOT
-885
+880
 200
-1325
+1320
 520
 Graphique
 time
@@ -653,9 +653,9 @@ PENS
 "IL-6" 1.0 0 -13345367 true "" "plot count IL_6s"
 
 MONITOR
-720
+715
 250
-880
+875
 295
 % Deg. de l'Os 
 int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patches with [type-patch = \"os\"]))) * 100)
@@ -664,9 +664,9 @@ int((1 - ((count patches with [pcolor > 5 and type-patch = \"os\"])/(count patch
 11
 
 MONITOR
-720
+715
 135
-815
+810
 180
 Chemokines
 count chemokines
@@ -675,9 +675,9 @@ count chemokines
 11
 
 MONITOR
-1230
+1225
 135
-1325
+1320
 180
 MMPs
 count MMPs
@@ -686,9 +686,9 @@ count MMPs
 11
 
 MONITOR
-920
+915
 135
-1015
+1010
 180
 RANKLs
 Count RANKLs
@@ -697,9 +697,9 @@ Count RANKLs
 11
 
 MONITOR
-820
+815
 135
-915
+910
 180
 Chondrocytes
 count chondrocytes
@@ -708,9 +708,9 @@ count chondrocytes
 11
 
 MONITOR
-720
+715
 300
-880
+875
 345
 % Deg. du Cartilage
 int((1 -((count patches with [type-patch = \"cartilage\"]) / 419)) * 100)
@@ -719,9 +719,9 @@ int((1 -((count patches with [type-patch = \"cartilage\"]) / 419)) * 100)
 11
 
 PLOT
-720
+715
 365
-880
+875
 520
 Historique
 NIL
@@ -741,9 +741,9 @@ PENS
 "IL-6" 1.0 0 -14070903 true "" "plot count IL_6s"
 
 BUTTON
-110
+115
 435
-180
+185
 468
 go
 go
@@ -760,7 +760,7 @@ NIL
 SLIDER
 5
 235
-180
+185
 268
 MacrophageActivation
 MacrophageActivation
@@ -775,7 +775,7 @@ HORIZONTAL
 SLIDER
 5
 275
-180
+185
 308
 FibroblasteActivation
 FibroblasteActivation
@@ -790,7 +790,7 @@ HORIZONTAL
 SLIDER
 5
 315
-180
+185
 348
 ChondrocyteActivation
 ChondrocyteActivation
@@ -805,7 +805,7 @@ HORIZONTAL
 SLIDER
 5
 355
-180
+185
 388
 OsteoclasteActivation
 OsteoclasteActivation
@@ -818,9 +818,9 @@ NIL
 HORIZONTAL
 
 MONITOR
-1030
+1025
 135
-1125
+1120
 180
 IL-6
 count IL_6s
@@ -841,7 +841,7 @@ INITIALISATION
 TEXTBOX
 115
 420
-180
+185
 438
 SIMULATION
 11
@@ -861,7 +861,7 @@ PARAMÈTRAGE DE L'ENVIRONNEMENT
 TEXTBOX
 10
 200
-175
+185
 226
 PARAMÈTRES D'ACTIVATION DES AGENTS\n
 11
@@ -968,7 +968,7 @@ MTX-Act
 MTX-Act
 0
 100
-100.0
+10.0
 1
 1
 NIL
@@ -998,7 +998,7 @@ Dose-Mtx
 Dose-Mtx
 0
 10
-3.0
+10.0
 1
 1
 NIL
@@ -1020,9 +1020,9 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-720
+715
 115
-870
+865
 133
 INFORMATIONS
 11
@@ -1741,10 +1741,10 @@ traitement_par_mtx</setup>
     <enumeratedValueSet variable="nb-osteoclaste">
       <value value="40"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="Dose-MTX">
+    <enumeratedValueSet variable="Dose-Mtx">
       <value value="1"/>
-      <value value="4"/>
-      <value value="10"/>
+      <value value="7"/>
+      <value value="15"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="MTX-Act">
       <value value="10"/>
@@ -1796,7 +1796,7 @@ traitement_par_tolizumab</setup>
     <enumeratedValueSet variable="nb-osteoclaste">
       <value value="40"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="Dose-tolizumab">
+    <enumeratedValueSet variable="Dose-Tolizumab">
       <value value="1"/>
       <value value="49"/>
       <value value="100"/>
@@ -1809,7 +1809,7 @@ traitement_par_tolizumab</setup>
   </experiment>
   <experiment name="traitement_PR_Infliximab" repetitions="1" runMetricsEveryStep="true">
     <setup>setup
-traitement_par_Infliximab</setup>
+traitement_par_infliximab</setup>
     <go>go</go>
     <timeLimit steps="1000"/>
     <metric>count IL_6s</metric>
