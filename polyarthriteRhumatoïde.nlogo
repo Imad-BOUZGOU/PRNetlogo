@@ -55,7 +55,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Efface le monde et les valeurs des variables de patches et des variable de tortues
+;; Efface le monde et les valeurs des variables de patches et des variable de tortues pour chaque simulation
 ;; Charger l'image du fond puis initialiser les variables de patches et des variable de tortues aux valeurs initiales par défaut
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to setup
@@ -64,47 +64,45 @@ to setup
   import-pcolors "EspaceSynovial.png"
 
   ;; Definir une forme initiale par défaut pour chaque agent
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   set-default-shape macrophages "circle"
   set-default-shape osteoclastes "monster"
   set-default-shape chondrocytes "x"
   set-default-shape fibroblastes "circle"
-
   set-default-shape TNF_as "cytokine"
   set-default-shape IL_6s "cytokine"
   set-default-shape MMPs "dot"
   set-default-shape RANKLs "dot"
   set-default-shape chemokines "ballpin"
-
   set-default-shape infliximabs "pentagon"
   set-default-shape tolizumabs "triangle"
   set-default-shape mtxs "star"
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   ;; Dessiner les différentes parties de l'espace synovial grâce aux patches
-  ;; OS
-  ask patches with [pcolor = white or pcolor = gray + 4][set type-patch "os"]
-  ;; Cartilage
-  ask patches with [pcolor = blue][set type-patch "cartilage"]
-  ;; Membrane Synovial
-  ask patches with [pcolor = yellow][set type-patch "membraneSynovial"]
-  ;; Liquide Synovial
-  ask patches with [pcolor = 48][set pcolor 48 set type-patch "liquideSynovial"]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ask patches with [pcolor = white or pcolor = gray + 4][set type-patch "os"]              ;; OS
+  ask patches with [pcolor = blue][set type-patch "cartilage"]                             ;; Cartilage
+  ask patches with [pcolor = yellow][set type-patch "membraneSynovial"]                    ;; Membrane Synovial
+  ask patches with [pcolor = 48][set pcolor 48 set type-patch "liquideSynovial"]           ;; Liquide Synovial
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   ask n-of nb-macrophage patches with [type-patch = "liquideSynovial"] [                   ;; Création des Macrophages dans le Liquide Synovial
     sprout-macrophages 1 [
       set color red
         let x random 100
         if (x < 20)[
-          hatch-IL_6s 1 [                     ;; Création des IL-6 par les Macrophages
+          hatch-IL_6s 1 [                                                                  ;; Création des IL-6 par les Macrophages
             set color blue
           ]
         ]
         if (x >= 20 and x < 40)[
-          hatch-MMPs 1[                       ;; Création des MMP par les Macrophages
+          hatch-MMPs 1[                                                                    ;; Création des MMP par les Macrophages
             set color green
           ]
         ]
         if (x >= 40)[
-          hatch-TNF_as 1 [                    ;; Création des TNF-a par les Macrophages
+          hatch-TNF_as 1 [                                                                 ;; Création des TNF-a par les Macrophages
             set color blue
           ]
         ]
@@ -116,18 +114,18 @@ to setup
     ]
   ]
   ask patches with [type-patch = "cartilage"] [
-    sprout-chondrocytes 1[                                                                ;; Création des Chondrocytes sur le Cartilage
+    sprout-chondrocytes 1[                                                                 ;; Création des Chondrocytes sur le Cartilage
       set color blue
       set size 0.7
-      set etat 1
+      set etat 0
     ]
   ]
   ask n-of nb-fibroblaste patches with [type-patch = "membraneSynovial"] [
-    sprout-fibroblastes 1[                                                                ;; Création des Fibroblastes sur la Membrane Synoviale
+    sprout-fibroblastes 1[                                                                 ;; Création des Fibroblastes sur la Membrane Synoviale
       set color white
     ]
   ]
-  reset-ticks                                                                             ;; Inistalisation de l'horloge
+  reset-ticks                                                                              ;; Inistalisation de l'horloge
 end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -136,10 +134,9 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Lancer la simulation
+;; Lancer la simulation en appelant les différentes fonctions définies dans le programme
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go
-  ;; Appel à la fonction go_... qui permet de lancer les différents agents
   go_TNF-as
   go_IL-6s
   go_macrophages
@@ -163,14 +160,14 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Fonction qui permet de faire avancer les MMPs
+;; Fonction qui permet de contrôler les actions des MMPs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_mmps
   ask MMPs[
     move "liquideSynovial" "membraneSynovial" "" 1
-    if any? chondrocytes-on neighbors4 [                   ;; à leurs contacte avec les Chondrocytes, les MMPs réagissent
-      if (ChondrocyteActivation < random 100)[             ;; grâce a un paramètre d’activation, les chondrocytes peuvent s’activer ou non
-        destructCartilage                                  ;; si oui alors appel à la fonction 'destructCartilage'
+    if any? chondrocytes-on neighbors4 [                   ;; à leurs contact avec les Chondrocytes, les MMPs réagissent,
+      if (random 100 < ChondrocyteActivation)[             ;; grâce à un paramètre d’activation, les chondrocytes peuvent s’activer ou non,
+        destructCartilage                                  ;; si oui alors appel à la fonction 'destructCartilage',
         die                                                ;; et elle meurent.
       ]
     ]
@@ -183,55 +180,52 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Fonction qui permet de faire avancer les Chondrocytes
+;; Fonction qui permet de contrôler les actions des Chondrocytes
+;; Les chondrocytes peuvent avoir deux etats :
+;; 0 : les chondrocytes se comportent de façon naturelle.
+;; 1 : une fois activées par le "Tolizumab" les chondrocytes vont changées de comportement.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 to go_chondrocytes
   ask chondrocytes[
-    ifelse (etat = 1)[                                                              ;; Si l'etat des Chondrocytes est a '1:active'
-      if ((any? TNF_as-on neighbors4)or(any? IL_6s-on neighbors4))[                 ;; à la presence de TNF_a, IL_6
+    ifelse (etat = 0)[                                                              ;; Si l'état des Chondrocytes est à 0 'désactivé'
+      if ((any? TNF_as-on neighbors4)or(any? IL_6s-on neighbors4))[                 ;; à la présence de TNF-a ou d'IL-6
         ask one-of chondrocytes-here[
-          hatch-MMPs 1[                              ;; Crée une MMP
+          hatch-MMPs 1[                                                             ;; Création d'une MMP par les Chondrocytes
             set color green
-          ]
-        ]
-        if (any? tolizumabs-here)[
-          if (Tolizumab-Act < random 100)[
-            ask tolizumabs-here [
-              die
-            ]
           ]
         ]
       ]
     ]
-    [
+
+    [                                                                               ;; Sinon si l'état des Chondrocytes est à 1 'activé'
       if (any? tolizumabs-here)[
         ask one-of tolizumabs-here[
-            die
+            die                                                                     ;; Les tolizumabs meurent
         ]
       ]
       if (any? MMPs-here)[
         ask one-of MMPs-here[
-          die
+          die                                                                       ;; Les MMPs meurent
         ]
       ]
       if (any? TNF_as-on neighbors4)[
         ask (one-of TNF_as-on neighbors4)[
-            die
+            die                                                                     ;; Les TNF-as meurent
         ]
       ]
       if (any? IL_6s-on neighbors4)[
         ask (one-of IL_6s-on neighbors4)[
-            die
+            die                                                                     ;; Les IL-6s meurent
         ]
       ]
       if (any? chemokines-on neighbors4)[
         ask (one-of chemokines-on neighbors4)[
-            die
+            die                                                                     ;; Les Chemokines meurent
         ]
       ]
       if (any? RANKLs-on neighbors4)[
         ask (one-of RANKLs-on neighbors4)[
-            die
+            die                                                                     ;; Les RANKLs meurent
         ]
       ]
     ]
@@ -244,23 +238,23 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; Destruction du Cartilage par les MMPs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to destructCartilage                        ;; Destruction du Cartilage par les MMPs
+to destructCartilage
   ask one-of Chondrocytes [
-    if any? MMPs-on neighbors4[             ;; A la presence de MMPs les Fibroblastes
-      ifelse (etat = 1)[
+    if any? MMPs-on neighbors4[                                  ;; À la présence des MMPs les Chondrocytes
+      ifelse (etat = 0)[                                         ;; les Chondrocytes dont l'état est à 0
         ifelse ((pcolor < 107) and (pcolor >= 105)) [
           set color color + 1
-          set pcolor pcolor + 1             ;; detruction du cartilage
+          set pcolor pcolor + 1                                  ;; detruisent le cartilage
         ]
         [
-          set pcolor 48
-          set type-patch "liquideSynovial"
+          set pcolor 48                                          ;; les patches du cartilage disparaissent dans le Liquide Synovial
+          set type-patch "liquideSynovial"                       ;; donc elle sont remplacés par des patches du Liquide Synovial.
           die
         ]
       ][
-        ask MMPs-on neighbors4 [die]
+        ask MMPs-on neighbors4 [die]                             ;; si l'état des Chondrocytes est activé par le Tolizumab les MMPs meurent sans impacté le cartilage.
       ]
     ]
   ]
@@ -272,14 +266,14 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; Fonction qui permet de contrôler les actions des RANKLs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to go_rankls                                ;; Faire avancer les RANKLs
+to go_rankls
   ask RANKLs [
     move "liquideSynovial" "membraneSynovial" "os" 1
-    if any? osteoclastes-here [
-      if OsteoclasteActivation < random 100[
-        die
+    if any? osteoclastes-here [                                  ;; À la présence de Osteoclastes les RANKLs
+      if (random 100 < OsteoclasteActivation)[                   ;; si le niveau d’activation des Osteoclaste est importante
+        die                                                      ;; les RANKLs meurent
       ]
     ]
   ]
@@ -291,16 +285,16 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; Fonction qui permet de contrôler les actions des Osteoclastes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to go_osteoclastes                          ;; Faire avancer les Osteoclastes
+to go_osteoclastes
   ask osteoclastes [
-    if any? RANKLs-here[
-      if (pcolor > 5) [
-        destructBone                        ;; Destruction des Os
+    if any? RANKLs-here[                                       ;; À la présence de RANKLs les osteoclastes
+      if (pcolor > 5) [                                        ;; si le patch de l'Os sur lequel il se trouve n'est pas encore détruit
+        set pcolor pcolor - 1                                  ;; La destruction est représentée par un changement de couleur du patch.
       ]
     ]
-    move "os" "" "" 1
+    move "os" "" "" 1                                          ;; faire deplacer les Osteoclastes sur les Os.
   ]
 end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -310,25 +304,12 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; Faire avancer les Chemokines
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to destructBone                             ;; Destruction des OS par les Osteoclastes
-  ask patch-here[
-    set pcolor pcolor - 1
-  ]
-end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to go_chemokines                            ;; Faire avancer les Chemokines
+to go_chemokines
   ask chemokines [
     move "liquideSynovial" "membraneSynovial" "" 1
+    ;; appel à la fonction move qui permet au Chemokines de se déplacer dans Liquide Synovial et dans membrane Synoviale
   ]
 end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -338,26 +319,30 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; Faire avancer les Macrophages
+;; Les Macrophages secrétent  des TNF-α, IL-6 et MMPs avec des probabilités différentes :
+;;  * TNF-α    0.6
+;;  * IL-6     0.2
+;;  * MMPs     0.2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to go_macrophages                           ;; Faire avancer les Macrophages
+to go_macrophages
   ask macrophages[
-    move "liquideSynovial" "" "" .1
-    if any? Chemokines-here [
-      if MacrophageActivation < random 100[
+    move "liquideSynovial" "" "" .1                       ;; Les Macrophages se déplacent dans le Liquide Synovial
+    if any? Chemokines-here [                             ;; À la présence de Chemokines les Macrophages réagissent
+      if (random 100 < MacrophageActivation)[             ;; plus l'activation des Macrophages est importante plus elle créent des cytokines
         let x random 100
-        if (x < 20)[
-          hatch-IL_6s 1 [                     ;; Création des IL-6 par les Macrophages
+        if (x < 20)[                                      ;; 20% de chance de créer IL-6
+          hatch-IL_6s 1 [                                    ;; Création des IL-6
             set color blue
           ]
         ]
-        if (x >= 20 and x < 40)[
-          hatch-MMPs 1[                       ;; Création des MMP par les Macrophages
+        if (x >= 20 and x < 40)[                          ;; 20% de chance de créer MMP
+          hatch-MMPs 1[                                      ;; Création des MMP
             set color green
           ]
         ]
-        if (x >= 40)[
-          hatch-TNF_as 1 [                    ;; Création des TNF-a par les Macrophages
+        if (x >= 40)[                                     ;; 60% de chance de créer TNF-a
+          hatch-TNF_as 1 [                                   ;; Création des TNF-a
             set color blue
           ]
         ]
@@ -378,15 +363,15 @@ end
 to go_TNF-as
   ask TNF_as[
     move "liquideSynovial" "membraneSynovial" "" 1
-    if (any? fibroblastes-here)[                  ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste : {
-      if FibroblasteActivation < random 100 [
-        MembraneSynovialInflammation              ;; Appelle a la fonction de l'inflammation de la Membrane Synoviale
+    if (any? fibroblastes-here)[                     ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste :
+      if (random 100 < FibroblasteActivation) [
+        MembraneSynovialInflammation                 ;; appel à la fonction de l'inflammation de la Membrane Synoviale
       ]
     ]
-    if any? infliximabs-here[
-      if (Infliximab-Act < random 100)[
+    if any? infliximabs-here[                        ;; À la présence de infliximabs
+      if (random 100 < Infliximab-Act)[              ;; si la valeur d'activation de l'infliximabs est important
         ask infliximabs-here[
-          die
+          die                                        ;; infliximabs meurent
         ]
       ]
     ]
@@ -404,9 +389,9 @@ end
 to go_IL-6s
   ask IL_6s[
     move "liquideSynovial" "membraneSynovial" "" 1
-    if (any? fibroblastes-here)[                  ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste : {
-      if FibroblasteActivation < random 100 [
-        MembraneSynovialInflammation              ;; Appelle a la fonction de l'inflammation de la Membrane Synoviale
+    if (any? fibroblastes-here)[                       ;; Chaque fois qu’une cytokine croise une cellule Fibroblaste :
+      if (random 100 < FibroblasteActivation)[         ;; si la valeur d'activation du fibroblastes est important
+        MembraneSynovialInflammation                   ;; appel à la fonction de l'inflammation de la Membrane Synoviale
       ]
     ]
   ]
@@ -418,44 +403,44 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; La membrane synoviale se transforme en Panus
+;; Ses Fibroblastes secrétent alors des TNF-α, IL-6 et MMPs avec des probabilités différentes :
+;;  * TNF-α    0.2
+;;  * IL-6     0.6
+;;  * MMPs     0.2
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to MembraneSynovialInflammation             ;; Inflammation de la Membrane Synoviale
+to MembraneSynovialInflammation                                   ;; Inflammation de la Membrane Synoviale
   ask fibroblastes[
-    if ((any? TNF_as-here) or (any? IL_6s-here))[                 ;; A la presence de Cytokines les Fibroblastes
-      set pcolor red
-        hatch-RANKLs 1[                        ;; Création des RANKLs
+    if ((any? TNF_as-here) or (any? IL_6s-here))[                 ;; À la présence d'IL-6 ou de TNF-a les Fibroblastes
+      set pcolor red                                              ;; Changer la couleur de la membrane synoviale en Rouge (Panus)
+        hatch-RANKLs 1[                                           ;; Créent des RANKLs
           set color 126
         ]
-        hatch-chemokines 1[                      ;; Création des Chémokines
+        hatch-chemokines 1[                                       ;; Créent des Chémokines
           set color 35
         ]
-      set color red                            ;; Changer la couleur de la Fibroblaste en Rouge
-      ask TNF_as-here [die]
-      ask IL_6s-here [die]
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      set color red
+      ask TNF_as-here [die]                                       ;; TNF-a détruite après le contact
+      ask IL_6s-here [die]                                        ;; IL-6 détruite après le contact
       let x random 100
-      if (x < 20)[
-        hatch-TNF_as 1 [                       ;; Création des TNF-a par les Macrophages
+      if (x < 20)[                                                ;; 20% de chance de créer TNF-a
+        hatch-TNF_as 1 [                                             ;; Création des TNF-a
           set color gray
         ]
       ]
-      if (x >= 20 and x < 40)[
-        hatch-MMPs 1[                          ;; Création des MMPs par les Macrophages
+      if (x >= 20 and x < 40)[                                    ;; 20% de chance de créer MMP
+        hatch-MMPs 1[                                                ;; Création des MMPs
           set color green
         ]
       ]
-      if (x >= 40)[
-        hatch-IL_6s 1 [                        ;; Création des IL-6 par les Macrophages
+      if (x >= 40)[                                               ;; 60% de chance de créer IL-6
+        hatch-IL_6s 1 [                                              ;; Création des IL-6
           set color blue
         ]
       ]
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ]
   ]
 end
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -463,9 +448,10 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; PARTIE II : TRAITEMENTS
+;; PARTIE II
+;; LES TRAITEMENTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-to traitement_par_infliximab                ;; TNF_as
+to traitement_par_infliximab                                                   ;; Fonction qui permet la création de l'Infliximab
   ask n-of Dose-Infliximab patches with [(type-patch = "liquideSynovial")][
     sprout-infliximabs 1[
       set color green
@@ -477,12 +463,12 @@ to go_infliximabs
     move "liquideSynovial" "membraneSynovial" "" 1
     if any? TNF_as-here[
       ask TNF_as-here[
-        die
+        die                                                                    ;; À leurs rencontre avec l'infliximab les TNF-as meurent
       ]
     ]
   ]
 end
-to traitement_par_tolizumab                 ;; Chondrocytes
+to traitement_par_tolizumab                                                    ;; Fonction qui permet la création de Tolizumab
   ask n-of Dose-tolizumab patches with [(type-patch = "liquideSynovial")][
     sprout-tolizumabs 1[
       set color green
@@ -492,16 +478,16 @@ end
 to go_tolizumabs
   ask tolizumabs [
     move "liquideSynovial" "cartilage" "" 1
-    if any? chondrocytes-here[
-      ask chondrocytes-here[
-        set etat 0
+    if ((any? chondrocytes-here) and (random 100 < Tolizumab-Act))[
+      ask chondrocytes-here[                                                   ;; À leurs rencontre avec le tolizumab les chondrocytes s'activent
+        set etat 1
         set pcolor red
       ]
-      die
+      die                                                                      ;; Les tolizumabs meurt
     ]
   ]
 end
-to traitement_par_mtx                       ;; Macrophages
+to traitement_par_mtx                                                          ;; Fonction qui permet la création du MTX
   ask n-of Dose-mtx patches with [(type-patch = "liquideSynovial")][
     sprout-mtxs 1[
       set color green
@@ -513,7 +499,7 @@ to go_mtxs
     move "liquideSynovial" "" "" 1
     if any? macrophages-here[
       ask macrophages-here[
-        die
+        die                                                                    ;; À leurs rencontre avec le MTX les macrophages meurent
       ]
     ]
   ]
@@ -1013,7 +999,7 @@ Dose-Tolizumab
 Dose-Tolizumab
 0
 100
-100.0
+20.0
 1
 1
 NIL
@@ -1112,10 +1098,10 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 > Bouton qui permet d'injecter du **Infliximab** dans l'Espace Synovial en prenant en compte sa dose et son niveau d'activation.
 
 #### MTX :
-> Bouton qui permet d'injecter du **MTX** dans l'espace Synovial en prenant en compte sa dose et son niveau d'activation..
+> Bouton qui permet d'injecter du **MTX** dans l'espace Synovial en prenant en compte sa dose et son niveau d'activation.
 
 #### Tolizumab :
-> Bouton qui permet d'injecter du **Tolizumab** dans l'espace Synovial en prenant en compte sa dose et son niveau d'activation..
+> Bouton qui permet d'injecter du **Tolizumab** dans l'espace Synovial en prenant en compte sa dose et son niveau d'activation.
 
 ### Les sliders :
 
@@ -1144,6 +1130,13 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 #### ChondrocyteActivation
 > Permet de contrôler l’efficacité des Chondrocytes, plus la valeur est très grande (> 50) cela permettra aux Chondrocytes d’avoir une meilleure résistance face aux MMPs.
 
+
+
+
+
+
+
+
 #### Infliximab-Act
 > Permet de contrôler l’efficacité du médicament **Infliximab** par rapport au **TNF_a**.
 
@@ -1163,6 +1156,10 @@ Par notre modèle, nous voulons modéliser grace à un système multi-agents, le
 
 #### Dose-Tolizumab
 > Permet de contrôler la dose de **Tolizumab** a injecté au patient.
+
+
+
+
 
 
 ### Les champs d'informations :
