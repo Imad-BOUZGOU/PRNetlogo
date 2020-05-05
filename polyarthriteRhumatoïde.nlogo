@@ -1,4 +1,4 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Création des différentes familles d'agents qui composent l'environnement
 ;; Types cellulaires intervenant dans l’inflammation rhumatoïde
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -65,18 +65,10 @@ to setup
 
   ;; Definir une forme initiale par défaut pour chaque agent
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  set-default-shape macrophages "circle"
-  set-default-shape osteoclastes "monster"
-  set-default-shape chondrocytes "x"
-  set-default-shape fibroblastes "circle"
-  set-default-shape TNF_as "cytokine"
-  set-default-shape IL_6s "cytokine"
-  set-default-shape MMPs "dot"
-  set-default-shape RANKLs "dot"
-  set-default-shape chemokines "ballpin"
-  set-default-shape infliximabs "pentagon"
-  set-default-shape tolizumabs "triangle"
-  set-default-shape mtxs "star"
+  set-default-shape macrophages "circle"    set-default-shape osteoclastes "monster"    set-default-shape chondrocytes "x"
+  set-default-shape fibroblastes "circle"   set-default-shape TNF_as "cytokine"         set-default-shape IL_6s "cytokine"
+  set-default-shape MMPs "dot"              set-default-shape RANKLs "dot"              set-default-shape chemokines "ballpin"
+  set-default-shape infliximabs "pentagon"  set-default-shape tolizumabs "triangle"     set-default-shape mtxs "star"
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   ;; Dessiner les différentes parties de l'espace synovial grâce aux patches
@@ -145,9 +137,15 @@ to go
   go_rankls
   go_osteoclastes
   go_chemokines
-  if (count infliximabs != 0)[go_infliximabs]                   ;; Si le medicament 'INFLIXIMAB' est present alors appel a sa fonction 'go_infliximabs' qui va le lancer
-  if (count mtxs != 0)[go_mtxs]                                 ;; Si le medicament 'MTX' est present alors appel a sa fonction 'go_mtxs' qui va le lancer
-  if (count tolizumabs != 0)[go_tolizumabs]                     ;; Si le medicament 'TOLIZUMAB' est present alors appel a sa fonction 'go_tolizumabs' qui va le lancer
+  if (count infliximabs != 0)[            ;; Si le medicament 'INFLIXIMAB' est present
+    go_infliximabs                        ;; alors appel a sa fonction 'go_infliximabs' qui va le lancer
+  ]
+  if (count mtxs != 0)[                   ;; Si le medicament 'MTX' est present
+    go_mtxs                               ;; alors appel a sa fonction 'go_mtxs' qui va le lancer
+  ]
+  if (count tolizumabs != 0)[             ;; Si le medicament 'TOLIZUMAB' est present
+    go_tolizumabs                         ;; alors appel a sa fonction 'go_tolizumabs' qui va le lancer
+  ]
   tick
   ;if ticks <= 900 [
   ;  export-view (word "./gif/" ticks ".png")
@@ -198,36 +196,12 @@ to go_chondrocytes
     ]
 
     [                                                                               ;; Sinon si l'état des Chondrocytes est à 1 'activé'
-      if (any? tolizumabs-here)[
-        ask one-of tolizumabs-here[
-            die                                                                     ;; Les tolizumabs meurent
-        ]
-      ]
-      if (any? MMPs-here)[
-        ask one-of MMPs-here[
-          die                                                                       ;; Les MMPs meurent
-        ]
-      ]
-      if (any? TNF_as-on neighbors4)[
-        ask (one-of TNF_as-on neighbors4)[
-            die                                                                     ;; Les TNF-as meurent
-        ]
-      ]
-      if (any? IL_6s-on neighbors4)[
-        ask (one-of IL_6s-on neighbors4)[
-            die                                                                     ;; Les IL-6s meurent
-        ]
-      ]
-      if (any? chemokines-on neighbors4)[
-        ask (one-of chemokines-on neighbors4)[
-            die                                                                     ;; Les Chemokines meurent
-        ]
-      ]
-      if (any? RANKLs-on neighbors4)[
-        ask (one-of RANKLs-on neighbors4)[
-            die                                                                     ;; Les RANKLs meurent
-        ]
-      ]
+      if (any? tolizumabs-here)[ask one-of tolizumabs-here[die]]                    ;; Les tolizumabs meurent
+      if (any? MMPs-here)[ask one-of MMPs-here[die]]                                ;; Les MMPs meurent
+      if (any? TNF_as-on neighbors4)[ask (one-of TNF_as-on neighbors4)[die]]        ;; Les TNF-as meurent
+      if (any? IL_6s-on neighbors4)[ask (one-of IL_6s-on neighbors4)[die]]          ;; Les IL-6s meurent
+      if (any? chemokines-on neighbors4)[ask (one-of chemokines-on neighbors4)[die]];; Les Chemokines meurent
+      if (any? RANKLs-on neighbors4)[ask (one-of RANKLs-on neighbors4)[die]]        ;; Les RANKLs meurent
     ]
   ]
 end
@@ -403,7 +377,7 @@ end
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; La membrane synoviale se transforme en Panus
+;; La membrane synoviale se transforme en Pannus
 ;; Ses Fibroblastes secrétent alors des TNF-α, IL-6 et MMPs avec des probabilités différentes :
 ;;  * TNF-α    0.2
 ;;  * IL-6     0.6
@@ -412,39 +386,26 @@ end
 to MembraneSynovialInflammation                                   ;; Inflammation de la Membrane Synoviale
   ask fibroblastes[
     if ((any? TNF_as-here) or (any? IL_6s-here))[                 ;; À la présence d'IL-6 ou de TNF-a les Fibroblastes
-      set pcolor red                                              ;; Changer la couleur de la membrane synoviale en Rouge (Panus)
-        hatch-RANKLs 1[                                           ;; Créent des RANKLs
-          set color 126
-        ]
-        hatch-chemokines 1[                                       ;; Créent des Chémokines
-          set color 35
-        ]
+      set pcolor red                                              ;; Changer la couleur de la membrane synoviale en Rouge (Pannus)
+      hatch-RANKLs 1[set color 126]                               ;; Créent des RANKLs
+      hatch-chemokines 1[set color 35]                            ;; Créent des Chémokines
       set color red
       ask TNF_as-here [die]                                       ;; TNF-a détruite après le contact
       ask IL_6s-here [die]                                        ;; IL-6 détruite après le contact
       let x random 100
       if (x < 20)[                                                ;; 20% de chance de créer TNF-a
-        hatch-TNF_as 1 [                                             ;; Création des TNF-a
-          set color gray
-        ]
+        hatch-TNF_as 1 [set color gray]                              ;; Création des TNF-a
       ]
       if (x >= 20 and x < 40)[                                    ;; 20% de chance de créer MMP
-        hatch-MMPs 1[                                                ;; Création des MMPs
-          set color green
-        ]
+        hatch-MMPs 1[set color green]                                ;; Création des MMPs
       ]
       if (x >= 40)[                                               ;; 60% de chance de créer IL-6
-        hatch-IL_6s 1 [                                              ;; Création des IL-6
-          set color blue
-        ]
+        hatch-IL_6s 1 [set color blue]                               ;; Création des IL-6
       ]
     ]
   ]
 end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -458,6 +419,7 @@ to traitement_par_infliximab                                                   ;
     ]
   ]
 end
+
 to go_infliximabs
   ask infliximabs [
     move "liquideSynovial" "membraneSynovial" "" 1
@@ -468,6 +430,7 @@ to go_infliximabs
     ]
   ]
 end
+
 to traitement_par_tolizumab                                                    ;; Fonction qui permet la création de Tolizumab
   ask n-of Dose-tolizumab patches with [(type-patch = "liquideSynovial")][
     sprout-tolizumabs 1[
@@ -475,6 +438,7 @@ to traitement_par_tolizumab                                                    ;
     ]
   ]
 end
+
 to go_tolizumabs
   ask tolizumabs [
     move "liquideSynovial" "cartilage" "" 1
@@ -487,6 +451,7 @@ to go_tolizumabs
     ]
   ]
 end
+
 to traitement_par_mtx                                                          ;; Fonction qui permet la création du MTX
   ask n-of Dose-mtx patches with [(type-patch = "liquideSynovial")][
     sprout-mtxs 1[
@@ -494,6 +459,7 @@ to traitement_par_mtx                                                          ;
     ]
   ]
 end
+
 to go_mtxs
   ask mtxs[
     move "liquideSynovial" "" "" 1
@@ -752,7 +718,7 @@ MacrophageActivation
 MacrophageActivation
 0
 100
-10.0
+25.0
 1
 1
 NIL
@@ -767,7 +733,7 @@ FibroblasteActivation
 FibroblasteActivation
 0
 100
-10.0
+25.0
 1
 1
 NIL
@@ -782,7 +748,7 @@ ChondrocyteActivation
 ChondrocyteActivation
 0
 100
-10.0
+100.0
 1
 1
 NIL
@@ -797,7 +763,7 @@ OsteoclasteActivation
 OsteoclasteActivation
 0
 100
-10.0
+25.0
 1
 1
 NIL
@@ -882,9 +848,9 @@ NIL
 0
 
 BUTTON
-1060
+1055
 30
-1115
+1110
 100
 MTX
 traitement_par_mtx
@@ -946,9 +912,9 @@ NIL
 HORIZONTAL
 
 SLIDER
-940
+935
 65
-1055
+1050
 98
 MTX-Act
 MTX-Act
@@ -976,9 +942,9 @@ NIL
 HORIZONTAL
 
 SLIDER
-940
+935
 30
-1055
+1050
 63
 Dose-Mtx
 Dose-Mtx
